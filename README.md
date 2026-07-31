@@ -1,8 +1,8 @@
 # 内部测试外包人员管理系统 / Internal Outsourcing Management System
 
-这是一个 PTA 后端开发实战项目，目标是设计并逐步实现一套面向企业内部测试外包人员的后台管理系统。
+这是一个面向企业内部测试外包人员的后台管理系统。
 
-This is a PTA backend practice project for designing and building an internal management system for outsourced testing personnel.
+This is a backend management system for internal outsourced testing personnel.
 
 ## 项目概览 / Project Overview
 
@@ -65,12 +65,6 @@ The system focuses on onboarding, approval, work logs, performance review, and a
 - API docs: Swagger 3 / Knife4j
 - Testing and quality: Postman, JUnit, Mockito, JMeter, Checkstyle
 - Optional extensions: MQ, Elasticsearch, Prometheus, Grafana, Docker, Spring Cloud Alibaba
-
-## 更新约定 / Update Convention
-
-后续内容会按周归档，例如 `week2/`、`week3/`、`week4/`。每个周目录都会包含一个 README，用来说明该周目标、交付物、运行方式、测试结果和待解决问题。
-
-Future work will be organized by week, such as `week2/`, `week3/`, and `week4/`. Each weekly folder will include a README describing goals, deliverables, run instructions, test results, and open issues.
 
 ## License
 
