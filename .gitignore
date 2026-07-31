@@ -1,0 +1,11 @@
+.DS_Store
+.Rhistory
+*.bkp
+
+# Local drafts and handoff notes
+/docs/
+/HANOFF.md
+
+# Superseded root-level diagrams; public deliverables live in week1/
+/ER.drawio
+/ER.drawio.png
