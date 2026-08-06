@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "PTA 内部测试外包人员管理系统",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "健康检查",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/health"
+      }
+    },
+    {
+      "name": "管理员登录",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123456\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      }
+    },
+    {
+      "name": "注册测试外包人员",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"tester01\",\n  \"password\": \"Tester@123456\",\n  \"phone\": \"13800000002\",\n  \"email\": \"tester01@example.com\",\n  \"realName\": \"测试外包一号\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      }
+    },
+    {
+      "name": "管理员创建领导账号",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"leader02\",\n  \"password\": \"Leader@123456\",\n  \"phone\": \"13800000003\",\n  \"email\": \"leader02@example.com\",\n  \"realName\": \"审批领导二号\",\n  \"departmentId\": 2,\n  \"status\": \"ENABLED\",\n  \"roleIds\": [2]\n}"
+        },
+        "url": "{{baseUrl}}/api/users"
+      }
+    },
+    {
+      "name": "查询启用部门",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/departments"
+      }
+    },
+    {
+      "name": "查询启用项目",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/projects?departmentId=2"
+      }
+    },
+    {
+      "name": "提交上岗申请",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"departmentId\": 2,\n  \"projectId\": 1,\n  \"positionType\": \"功能测试\",\n  \"applicationReason\": \"参与内部测试外包人员管理系统功能测试\"\n}"
+        },
+        "url": "{{baseUrl}}/api/onboarding/applications"
+      }
+    },
+    {
+      "name": "领导待审批分页",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/approvals/pending?pageNo=1&pageSize=10"
+      }
+    },
+    {
+      "name": "审批通过",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"opinion\": \"资料完整，同意上岗\"\n}"
+        },
+        "url": "{{baseUrl}}/api/approvals/1/approve"
+      }
+    },
+    {
+      "name": "批量审批",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"applicationIds\": [1, 2, 3],\n  \"result\": \"APPROVED\",\n  \"opinion\": \"资料完整，同意上岗\"\n}"
+        },
+        "url": "{{baseUrl}}/api/approvals/batch"
+      }
+    },
+    {
+      "name": "查询通知消息",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/notifications?pageNo=1&pageSize=10"
+      }
+    },
+    {
+      "name": "查询操作日志",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/operation-logs?pageNo=1&pageSize=10"
+      }
+    }
+  ]
+}

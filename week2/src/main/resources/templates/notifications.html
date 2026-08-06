@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>通知消息 - 内部测试外包人员管理系统</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.8/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="notifications">
+<div class="app-layout">
+    <aside class="app-sidebar d-none d-lg-flex flex-column">
+        <div class="app-brand">
+            <span class="brand-mark"><i class="bi bi-diagram-3"></i></span>
+            <span>外包管理</span>
+        </div>
+        <nav class="app-nav-group">
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-speedometer2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
+                <i class="bi bi-file-earmark-plus"></i><span>上岗申请</span>
+            </a>
+            <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
+                <i class="bi bi-check2-square"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/users" data-permission="user:read">
+                <i class="bi bi-people"></i><span>用户管理</span>
+            </a>
+            <a class="app-nav-link active" href="/ui/notifications" data-permission="notification:read">
+                <i class="bi bi-bell"></i><span>通知消息</span>
+            </a>
+            <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
+                <i class="bi bi-journal-text"></i><span>操作日志</span>
+            </a>
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>Knife4j</span></a>
+        </nav>
+    </aside>
+    <div class="app-main">
+        <header class="app-topbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary icon-only d-lg-none" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="打开导航">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="fw-semibold d-lg-none">外包管理</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span id="currentUser" class="text-secondary"></span>
+                <button id="logoutButton" class="btn btn-outline-secondary btn-sm btn-icon" type="button">
+                    <i class="bi bi-box-arrow-right"></i><span>退出</span>
+                </button>
+            </div>
+        </header>
+        <main class="app-content">
+            <div id="alert" class="alert d-none" role="alert"></div>
+            <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">通知消息</h1>
+                    <p class="page-subtitle">MQ 异步通知处理结果</p>
+                </div>
+                <button id="reloadNotifications" class="btn btn-outline-secondary btn-icon" type="button">
+                    <i class="bi bi-arrow-clockwise"></i><span>刷新</span>
+                </button>
+            </div>
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">通知列表</h2>
+                    <span id="notificationCount" class="text-secondary small"></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>申请 ID</th>
+                            <th>类型</th>
+                            <th>标题</th>
+                            <th>状态</th>
+                            <th>重试</th>
+                            <th>时间</th>
+                        </tr>
+                        </thead>
+                        <tbody id="notificationRows"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+<div id="mobileNav" class="offcanvas offcanvas-start" tabindex="-1">
+    <div class="offcanvas-header">
+        <h2 class="h5 offcanvas-title">外包管理</h2>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="关闭"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <nav class="app-nav-group">
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-speedometer2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
+                <i class="bi bi-file-earmark-plus"></i><span>上岗申请</span>
+            </a>
+            <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
+                <i class="bi bi-check2-square"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/users" data-permission="user:read">
+                <i class="bi bi-people"></i><span>用户管理</span>
+            </a>
+            <a class="app-nav-link active" href="/ui/notifications" data-permission="notification:read">
+                <i class="bi bi-bell"></i><span>通知消息</span>
+            </a>
+            <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
+                <i class="bi bi-journal-text"></i><span>操作日志</span>
+            </a>
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>Knife4j</span></a>
+        </nav>
+    </div>
+</div>
+<script src="/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

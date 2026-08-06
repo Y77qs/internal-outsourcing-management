@@ -1,10 +1,17 @@
 .DS_Store
 .Rhistory
 *.bkp
+/target/
+/.mvn/apache-maven-*/
+/.mvn/apache-maven-*-bin.zip
+/week2/target/
+/week2/.mvn/apache-maven-*/
+/week2/.mvn/apache-maven-*-bin.zip
 
 # Local drafts and handoff notes
-/docs/
+/docs/*
 /HANOFF.md
+/杨青硕工作总结.docx
 
 # Superseded root-level diagrams; public deliverables live in week1/
 /ER.drawio
