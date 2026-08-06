@@ -4,7 +4,7 @@
 
 This is a backend management system for internal outsourced testing personnel.
 
-系统围绕测试外包人员的入场、审批、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、操作日志和接口文档能力。当前实现位于 `week2/`，需求与设计资料保留在 `week1/`。
+系统围绕测试外包人员的入场、审批、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、操作日志和接口文档能力。后端工程位于仓库根目录，设计资料和实现文档统一归档在 `docs/`。
 
 ## 功能模块 / Features
 
@@ -23,15 +23,15 @@ This is a backend management system for internal outsourced testing personnel.
 
 | 登录页 | 工作台 |
 | --- | --- |
-| ![登录页](week2/docs/screenshots/login.png) | ![工作台](week2/docs/screenshots/dashboard.png) |
+| ![登录页](docs/screenshots/login.png) | ![工作台](docs/screenshots/dashboard.png) |
 
 | 上岗申请 | 领导审批 |
 | --- | --- |
-| ![上岗申请](week2/docs/screenshots/applications.png) | ![领导审批](week2/docs/screenshots/approvals.png) |
+| ![上岗申请](docs/screenshots/applications.png) | ![领导审批](docs/screenshots/approvals.png) |
 
 | 用户管理 |
 | --- |
-| ![用户管理](week2/docs/screenshots/users.png) |
+| ![用户管理](docs/screenshots/users.png) |
 
 ## 技术栈 / Tech Stack
 
@@ -45,12 +45,6 @@ This is a backend management system for internal outsourced testing personnel.
 - Quality: JUnit, Mockito, Checkstyle, SLF4J
 
 ## 快速启动 / Quick Start
-
-进入后端工程目录：
-
-```bash
-cd week2
-```
 
 启动 MySQL、Redis 和 RabbitMQ：
 
@@ -92,16 +86,16 @@ docker compose up -d
 
 | 文档 | 说明 |
 | --- | --- |
-| [PRD](week1/PRD.md) | 项目背景、用户故事、验收标准、范围边界和风险 |
-| [需求文档](week1/%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md) | 业务流程和功能需求拆分 |
-| [系统架构图](week1/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png) | 分层架构、认证授权、服务、数据访问和扩展组件 |
-| [ER 图](week1/ER.png) | 核心实体、属性和关系 |
-| [UML 类图](week1/UML.png) | 实体类、关联关系、分层落地结构和关键枚举 |
-| [实现说明](week2/docs/README.md) | 后端交付范围、启动步骤、默认账号和目录说明 |
-| [接口说明](week2/docs/api.md) | REST API、权限、请求示例和页面入口 |
-| [数据库设计](week2/docs/database.md) | 表结构、关系、索引和初始化数据 |
-| [测试记录](week2/docs/test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
-| [问题清单](week2/docs/problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
+| [PRD](docs/design/PRD.md) | 项目背景、用户故事、验收标准、范围边界和风险 |
+| [需求文档](docs/design/%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md) | 业务流程和功能需求拆分 |
+| [系统架构图](docs/design/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png) | 分层架构、认证授权、服务、数据访问和扩展组件 |
+| [ER 图](docs/design/ER.png) | 核心实体、属性和关系 |
+| [UML 类图](docs/design/UML.png) | 实体类、关联关系、分层落地结构和关键枚举 |
+| [实现说明](docs/implementation/README.md) | 后端交付范围、启动步骤、默认账号和目录说明 |
+| [接口说明](docs/implementation/api.md) | REST API、权限、请求示例和页面入口 |
+| [数据库设计](docs/implementation/database.md) | 表结构、关系、索引和初始化数据 |
+| [测试记录](docs/implementation/test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
+| [问题清单](docs/implementation/problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
 
 ## 测试与质量 / Testing
 
@@ -116,14 +110,15 @@ docker compose up -d
 
 ```text
 .
-├── week1/                  # 需求、PRD、系统架构图、ER 图、UML 类图
-├── week2/                  # Spring Boot 后端实现
-│   ├── src/main/java/      # Controller、Service、Mapper、Entity、Security、AOP
-│   ├── src/main/resources/ # 配置、SQL、Thymeleaf 页面、静态资源
-│   ├── src/test/java/      # 单元测试
-│   ├── docs/               # API、数据库、测试记录、截图、问题清单
-│   ├── docker-compose.yml  # MySQL、Redis、RabbitMQ
-│   └── pom.xml             # Maven 项目配置
+├── src/                     # Spring Boot 源码、页面、静态资源、测试
+├── config/                  # Checkstyle 配置
+├── docs/
+│   ├── design/              # PRD、需求文档、架构图、ER 图、UML 图
+│   ├── implementation/      # API、数据库、测试记录、优化说明、问题清单
+│   └── screenshots/         # 前端页面截图
+├── docker-compose.yml       # MySQL、Redis、RabbitMQ
+├── pom.xml                  # Maven 项目配置
+├── mvnw / mvnw.cmd
 └── README.md
 ```
 

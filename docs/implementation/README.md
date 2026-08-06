@@ -2,7 +2,7 @@
 
 ## 交付范围
 
-系统交付以验收项为准，技术栈遵循 `week1/PRD.md`：
+系统交付以验收项为准，技术栈遵循 [`../design/PRD.md`](../design/PRD.md)：
 
 - Spring Boot 3.x 基础工程。
 - MyBatis-Plus + MySQL 8.x。
@@ -18,11 +18,7 @@
 
 ## 启动步骤
 
-进入当前工程目录后执行：
-
-```bash
-# 当前工程目录
-```
+进入仓库根目录后执行：
 
 1. 启动中间件：
 
@@ -84,9 +80,9 @@ http://localhost:8080/swagger-ui.html
 | `src/main/resources/static` | Bootstrap 页面补充样式和 JS |
 | `src/main/resources/db/schema.sql` | MySQL 建表脚本 |
 | `src/main/resources/db/data.sql` | 初始化角色、权限、账号、部门和项目 |
-| `docs/api.md` | 接口说明 |
-| `docs/database.md` | 数据库设计说明 |
-| `docs/optimization-report.md` | 严格测试门控优化说明 |
-| `docs/test-record.md` | 测试记录 |
-| `docs/problem-list.md` | 问题 list |
-| `docs/postman_collection.json` | Postman 联调集合 |
+| `docs/implementation/api.md` | 接口说明 |
+| `docs/implementation/database.md` | 数据库设计说明 |
+| `docs/implementation/optimization-report.md` | 严格测试门控优化说明 |
+| `docs/implementation/test-record.md` | 测试记录 |
+| `docs/implementation/problem-list.md` | 问题 list |
+| `docs/implementation/postman_collection.json` | Postman 联调集合 |
