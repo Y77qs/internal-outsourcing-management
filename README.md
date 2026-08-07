@@ -87,6 +87,7 @@ docker compose up -d
 | 文档 | 说明 |
 | --- | --- |
 | [PRD](docs/design/PRD.md) | 项目背景、用户故事、验收标准、范围边界和风险 |
+| [前端产品需求文档](docs/design/frontend-prd.md) | 目标用户、核心场景、页面结构、视觉风格和交互状态要求 |
 | [需求文档](docs/design/%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md) | 业务流程和功能需求拆分 |
 | [系统架构图](docs/design/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png) | 分层架构、认证授权、服务、数据访问和扩展组件 |
 | [ER 图](docs/design/ER.png) | 核心实体、属性和关系 |

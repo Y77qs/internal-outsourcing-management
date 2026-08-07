@@ -13,16 +13,25 @@
 <div class="app-layout">
     <aside class="app-sidebar d-none d-lg-flex flex-column">
         <div class="app-brand">
-            <span class="brand-mark"><i class="bi bi-diagram-3"></i></span>
-            <span>外包管理</span>
+            <span class="brand-mark"><i class="bi bi-hexagon-fill"></i></span>
+            <div class="brand-copy">
+                <h1 class="brand-title">外包管理</h1>
+                <div class="brand-subtitle">内部管理平台</div>
+            </div>
+        </div>
+        <div class="sidebar-primary-action" data-permission="user:write">
+            <button class="btn btn-primary btn-icon w-100" type="button" data-bs-toggle="modal"
+                    data-bs-target="#createUserModal">
+                <i class="bi bi-person-plus"></i><span>创建账号</span>
+            </button>
         </div>
         <nav class="app-nav-group">
-            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-speedometer2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-grid-1x2"></i><span>工作台</span></a>
             <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
-                <i class="bi bi-file-earmark-plus"></i><span>上岗申请</span>
+                <i class="bi bi-file-earmark-text"></i><span>上岗申请</span>
             </a>
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
-                <i class="bi bi-check2-square"></i><span>领导审批</span>
+                <i class="bi bi-ui-checks"></i><span>领导审批</span>
             </a>
             <a class="app-nav-link active" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>
@@ -31,81 +40,105 @@
                 <i class="bi bi-bell"></i><span>通知消息</span>
             </a>
             <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
-                <i class="bi bi-journal-text"></i><span>操作日志</span>
+                <i class="bi bi-clock-history"></i><span>操作日志</span>
             </a>
-            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>Knife4j</span></a>
         </nav>
+        <div class="app-sidebar-footer">
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>接口文档</span></a>
+        </div>
     </aside>
     <div class="app-main">
         <header class="app-topbar">
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3">
                 <button class="btn btn-outline-secondary icon-only d-lg-none" type="button"
                         data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="打开导航">
                     <i class="bi bi-list"></i>
                 </button>
-                <span class="fw-semibold d-lg-none">外包管理</span>
+                <h2 class="topbar-title">User Management</h2>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span id="currentUser" class="text-secondary"></span>
+                <div class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input class="form-control" placeholder="搜索用户" type="search">
+                </div>
+                <button class="btn btn-primary btn-icon topbar-utility" type="button" data-bs-toggle="modal"
+                        data-bs-target="#createUserModal" data-permission="user:write">
+                    <i class="bi bi-person-plus"></i><span>创建账号</span>
+                </button>
+                <a class="icon-circle topbar-utility position-relative" href="/ui/notifications"
+                   data-permission="notification:read" aria-label="通知消息">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 end-0 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </a>
+                <a class="icon-circle topbar-utility" href="/doc.html" aria-label="接口文档">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </a>
+                <div class="topbar-user">
+                    <span class="user-avatar"><i class="bi bi-person"></i></span>
+                    <span id="currentUser" class="fw-semibold"></span>
+                </div>
                 <button id="logoutButton" class="btn btn-outline-secondary btn-sm btn-icon" type="button">
                     <i class="bi bi-box-arrow-right"></i><span>退出</span>
                 </button>
             </div>
         </header>
         <main class="app-content">
-            <div id="alert" class="alert d-none" role="alert"></div>
-            <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">用户管理</h1>
-                    <p class="page-subtitle">账号、状态与角色</p>
+            <div class="content-shell">
+                <div id="alert" class="alert d-none" role="alert"></div>
+                <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+                <div class="page-header">
+                    <div>
+                        <div class="page-eyebrow">USERS</div>
+                        <h1 class="page-title">用户管理</h1>
+                        <p class="page-subtitle">管理员创建内部账号，维护用户状态和角色权限。</p>
+                    </div>
+                    <button class="btn btn-primary btn-icon" type="button" data-bs-toggle="modal"
+                            data-bs-target="#createUserModal" data-permission="user:write">
+                        <i class="bi bi-person-plus"></i><span>创建账号</span>
+                    </button>
                 </div>
-                <button class="btn btn-primary btn-icon" type="button" data-bs-toggle="modal"
-                        data-bs-target="#createUserModal" data-permission="user:write">
-                    <i class="bi bi-person-plus"></i><span>创建账号</span>
-                </button>
-            </div>
-            <section class="panel">
-                <div class="panel-header">
-                    <div class="toolbar w-100">
-                        <div class="filter-grid">
-                            <div>
-                                <label for="userKeyword" class="form-label">用户名</label>
-                                <input id="userKeyword" class="form-control">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="toolbar">
+                            <div class="filter-grid">
+                                <div>
+                                    <label for="userKeyword" class="form-label">用户名</label>
+                                    <input id="userKeyword" class="form-control" placeholder="输入用户名">
+                                </div>
+                                <div>
+                                    <label for="userStatus" class="form-label">状态</label>
+                                    <select id="userStatus" class="form-select">
+                                        <option value="">全部状态</option>
+                                        <option value="ENABLED">启用</option>
+                                        <option value="DISABLED">禁用</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label for="userStatus" class="form-label">状态</label>
-                                <select id="userStatus" class="form-select">
-                                    <option value="">全部</option>
-                                    <option value="ENABLED">启用</option>
-                                    <option value="DISABLED">禁用</option>
-                                </select>
+                            <div class="toolbar-actions">
+                                <button id="searchUsers" class="btn btn-primary btn-icon" type="button">
+                                    <i class="bi bi-search"></i><span>查询</span>
+                                </button>
                             </div>
-                        </div>
-                        <div class="toolbar-actions">
-                            <button id="searchUsers" class="btn btn-primary btn-icon" type="button">
-                                <i class="bi bi-search"></i><span>查询</span>
-                            </button>
                         </div>
                     </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>用户名</th>
-                            <th>姓名</th>
-                            <th>部门</th>
-                            <th>状态</th>
-                            <th>角色</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody id="userRows"></tbody>
-                    </table>
-                </div>
-            </section>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>姓名</th>
+                                <th>部门</th>
+                                <th>状态</th>
+                                <th>角色</th>
+                                <th class="text-end">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="userRows"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 </div>
@@ -114,7 +147,10 @@
         <div class="modal-content">
             <form id="createUserForm">
                 <div class="modal-header">
-                    <h2 class="modal-title h5">创建内部账号</h2>
+                    <div>
+                        <h2 class="modal-title h5 fw-bold">创建内部账号</h2>
+                        <p class="text-secondary mb-0 small">领导和管理员账号由管理员创建并分配角色。</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                 </div>
                 <div class="modal-body">
@@ -153,7 +189,7 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">角色</label>
-                            <div id="createRoleCheckboxes" class="d-flex flex-wrap gap-3"></div>
+                            <div id="createRoleCheckboxes" class="d-flex flex-wrap gap-2"></div>
                         </div>
                     </div>
                 </div>
@@ -171,7 +207,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="roleEditorTitle" class="modal-title h5">分配角色</h2>
+                <div>
+                    <h2 id="roleEditorTitle" class="modal-title h5 fw-bold">分配角色</h2>
+                    <p class="text-secondary mb-0 small">调整后会立即影响该账号的功能入口。</p>
+                </div>
                 <button id="cancelRoleEdit" type="button" class="btn-close" data-bs-dismiss="modal"
                         aria-label="关闭"></button>
             </div>
@@ -189,17 +228,26 @@
 </div>
 <div id="mobileNav" class="offcanvas offcanvas-start" tabindex="-1">
     <div class="offcanvas-header">
-        <h2 class="h5 offcanvas-title">外包管理</h2>
+        <div class="d-flex align-items-center gap-2">
+            <span class="brand-mark"><i class="bi bi-hexagon-fill"></i></span>
+            <h2 class="h5 offcanvas-title mb-0">外包管理</h2>
+        </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="关闭"></button>
     </div>
-    <div class="offcanvas-body p-0">
+    <div class="offcanvas-body p-0 d-flex flex-column">
+        <div class="sidebar-primary-action" data-permission="user:write">
+            <button class="btn btn-primary btn-icon w-100" type="button" data-bs-toggle="modal"
+                    data-bs-target="#createUserModal">
+                <i class="bi bi-person-plus"></i><span>创建账号</span>
+            </button>
+        </div>
         <nav class="app-nav-group">
-            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-speedometer2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-grid-1x2"></i><span>工作台</span></a>
             <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
-                <i class="bi bi-file-earmark-plus"></i><span>上岗申请</span>
+                <i class="bi bi-file-earmark-text"></i><span>上岗申请</span>
             </a>
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
-                <i class="bi bi-check2-square"></i><span>领导审批</span>
+                <i class="bi bi-ui-checks"></i><span>领导审批</span>
             </a>
             <a class="app-nav-link active" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>
@@ -208,10 +256,12 @@
                 <i class="bi bi-bell"></i><span>通知消息</span>
             </a>
             <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
-                <i class="bi bi-journal-text"></i><span>操作日志</span>
+                <i class="bi bi-clock-history"></i><span>操作日志</span>
             </a>
-            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>Knife4j</span></a>
         </nav>
+        <div class="app-sidebar-footer">
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>接口文档</span></a>
+        </div>
     </div>
 </div>
 <script src="/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>

@@ -107,13 +107,21 @@ async function requireLogin() {
 }
 
 async function initDashboard() {
-    document.querySelector("#roleLine").textContent = Array.from(currentUser.roles || []).join(", ");
+    setText("#dashboardUserName", currentUser.realName || currentUser.username || "系统用户");
+    setText("#roleLine", Array.from(currentUser.roles || []).join(", ") || "-");
     try {
         const health = await api("/api/health");
-        document.querySelector("#healthStatus").textContent = `${health.status} / ${health.service}`;
+        setText("#healthStatus", `${health.status} / ${health.service}`);
     } catch (error) {
-        document.querySelector("#healthStatus").textContent = "检查失败";
+        setText("#healthStatus", "检查失败");
     }
+    // 工作台统计只读取当前账号具备权限的数据，避免为了展示数字触发无权限请求。
+    await Promise.all([
+        loadDashboardCount("#dashboardApplicationCount", "/api/onboarding/applications/mine?pageNo=1&pageSize=1",
+                "application:read:self"),
+        loadDashboardCount("#dashboardPendingCount", "/api/approvals/pending?pageNo=1&pageSize=1", "approval:read"),
+        loadDashboardCount("#dashboardNotificationCount", "/api/notifications?pageNo=1&pageSize=1", "notification:read")
+    ]);
 }
 
 async function initApplications() {
@@ -157,8 +165,9 @@ async function initApplications() {
 }
 
 async function loadApplications() {
-    const pageData = await api("/api/onboarding/applications/mine?pageNo=1&pageSize=20");
     const rows = document.querySelector("#applicationRows");
+    rows.innerHTML = loadingRow(7);
+    const pageData = await api("/api/onboarding/applications/mine?pageNo=1&pageSize=20");
     if (pageData.records.length === 0) {
         rows.innerHTML = emptyRow(7, "暂无上岗申请", "bi-inbox");
         return;
@@ -173,7 +182,7 @@ async function loadApplications() {
             <td class="text-truncate-cell" title="${escapeHtml(application.approvalOpinion || "")}">
                 ${escapeHtml(application.approvalOpinion || "")}
             </td>
-            <td>
+            <td class="text-end">
                 <span class="table-actions">
                     ${application.status === "PENDING"
                         ? `<button class="btn btn-outline-danger btn-sm btn-icon" data-action="withdraw"
@@ -217,9 +226,10 @@ async function initApprovals() {
 }
 
 async function loadApprovals() {
+    const rows = document.querySelector("#approvalRows");
+    rows.innerHTML = loadingRow(8);
     const pageData = await api("/api/approvals/pending?pageNo=1&pageSize=20");
     document.querySelector("#pendingCount").textContent = `共 ${pageData.total} 条`;
-    const rows = document.querySelector("#approvalRows");
     if (pageData.records.length === 0) {
         rows.innerHTML = emptyRow(8, "暂无待审批申请", "bi-check2-circle");
         document.querySelector("#checkAllApprovals").checked = false;
@@ -235,7 +245,7 @@ async function loadApprovals() {
             <td>${escapeHtml(application.projectName || "")}</td>
             <td>${escapeHtml(application.positionType || "")}</td>
             <td>${formatTime(application.submittedAt || application.createdAt)}</td>
-            <td>
+            <td class="text-end">
                 <span class="table-actions">
                     <button class="btn btn-success btn-sm btn-icon" data-action="approve" data-id="${application.id}"
                             type="button"><i class="bi bi-check2"></i><span>通过</span></button>
@@ -362,6 +372,8 @@ async function createUser(event) {
 }
 
 async function loadUsers() {
+    const rows = document.querySelector("#userRows");
+    rows.innerHTML = loadingRow(7);
     const params = new URLSearchParams();
     const username = document.querySelector("#userKeyword").value;
     const status = document.querySelector("#userStatus").value;
@@ -375,7 +387,6 @@ async function loadUsers() {
     params.set("pageSize", "20");
     const pageData = await api(`/api/users?${params.toString()}`);
     latestUsers = pageData.records;
-    const rows = document.querySelector("#userRows");
     if (latestUsers.length === 0) {
         rows.innerHTML = emptyRow(7, "暂无用户数据", "bi-people");
         return;
@@ -388,7 +399,7 @@ async function loadUsers() {
             <td>${escapeHtml(departmentName(user.departmentId))}</td>
             <td>${badge(user.status)}</td>
             <td>${escapeHtml(Array.from(user.roles || []).join(", "))}</td>
-            <td>
+            <td class="text-end">
                 <span class="table-actions">
                     <button class="btn ${user.status === "ENABLED" ? "btn-outline-danger" : "btn-outline-success"}
                             btn-sm btn-icon" data-action="status" data-id="${user.id}" type="button">
@@ -453,9 +464,10 @@ async function initNotifications() {
 }
 
 async function loadNotifications() {
+    const rows = document.querySelector("#notificationRows");
+    rows.innerHTML = loadingRow(7);
     const pageData = await api("/api/notifications?pageNo=1&pageSize=20");
     document.querySelector("#notificationCount").textContent = `共 ${pageData.total} 条`;
-    const rows = document.querySelector("#notificationRows");
     if (pageData.records.length === 0) {
         rows.innerHTML = emptyRow(7, "暂无通知消息", "bi-bell");
         return;
@@ -481,6 +493,8 @@ async function initOperationLogs() {
 }
 
 async function loadOperationLogs() {
+    const rows = document.querySelector("#operationLogRows");
+    rows.innerHTML = loadingRow(8);
     const params = new URLSearchParams();
     const operatorId = document.querySelector("#logOperatorId").value;
     const moduleName = document.querySelector("#logModuleName").value;
@@ -501,7 +515,6 @@ async function loadOperationLogs() {
     params.set("pageNo", "1");
     params.set("pageSize", "30");
     const pageData = await api(`/api/operation-logs?${params.toString()}`);
-    const rows = document.querySelector("#operationLogRows");
     if (pageData.records.length === 0) {
         rows.innerHTML = emptyRow(8, "暂无操作日志", "bi-journal-text");
         return;
@@ -601,7 +614,7 @@ function renderCreateRoleCheckboxes() {
 
 function buildRoleCheckboxes(inputClass, selected) {
     return availableRoles.map(role => `
-        <label class="form-check">
+        <label class="form-check-card">
             <input class="form-check-input ${inputClass}" type="checkbox" value="${role.id}"
                    ${selected(role) ? "checked" : ""}>
             <span class="form-check-label">${escapeHtml(role.roleName)} (${escapeHtml(role.roleCode)})</span>
@@ -610,10 +623,7 @@ function buildRoleCheckboxes(inputClass, selected) {
 }
 
 function renderCurrentUser() {
-    const element = document.querySelector("#currentUser");
-    if (element && currentUser) {
-        element.textContent = `${currentUser.realName || currentUser.username}`;
-    }
+    setText("#currentUser", currentUser ? `${currentUser.realName || currentUser.username}` : "");
 }
 
 function applyPermissions() {
@@ -673,11 +683,39 @@ function emptyRow(colspan, message, icon) {
             <td colspan="${colspan}">
                 <div class="empty-state">
                     <i class="bi ${icon}"></i>
-                    <div>${escapeHtml(message)}</div>
+                    <div class="empty-title">${escapeHtml(message)}</div>
+                    <p class="empty-copy">当前没有符合条件的数据。</p>
                 </div>
             </td>
         </tr>
     `;
+}
+
+function loadingRow(colspan) {
+    return `
+        <tr>
+            <td colspan="${colspan}">
+                <div class="empty-state">
+                    <span class="spinner-border spinner-border-sm text-success" aria-hidden="true"></span>
+                    <div class="empty-title">数据加载中</div>
+                    <p class="empty-copy">正在读取最新业务数据。</p>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+async function loadDashboardCount(selector, url, permission) {
+    if (!hasClientPermission(permission)) {
+        setText(selector, "-");
+        return;
+    }
+    try {
+        const pageData = await api(url);
+        setText(selector, pageData.total ?? 0);
+    } catch (error) {
+        setText(selector, "-");
+    }
 }
 
 function badge(value) {
@@ -723,6 +761,17 @@ function departmentName(departmentId) {
     }
     const department = availableDepartments.find(item => item.id === departmentId);
     return department ? department.departmentName : String(departmentId);
+}
+
+function hasClientPermission(permission) {
+    return new Set(currentUser?.permissions || []).has(permission);
+}
+
+function setText(selector, value) {
+    const element = document.querySelector(selector);
+    if (element) {
+        element.textContent = value;
+    }
 }
 
 function formatTime(value) {
