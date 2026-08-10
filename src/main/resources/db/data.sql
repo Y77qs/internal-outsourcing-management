@@ -36,7 +36,21 @@ VALUES
     (10, 'operation:read', '查询操作日志', '操作日志', 'API', '/api/operation-logs/**', 'GET', 'GET',
         '/api/operation-logs/**'),
     (11, 'basic:read', '查询基础资料', '基础资料', 'API', '/api/departments,/api/projects', 'GET', 'GET',
-        '/api/departments,/api/projects')
+        '/api/departments,/api/projects'),
+    (12, 'worklog:create', '提交工作日志', '工作日志', 'API', '/api/work-logs', 'POST', 'POST',
+        '/api/work-logs'),
+    (13, 'worklog:update:self', '修改个人工作日志', '工作日志', 'API', '/api/work-logs/*', 'PUT', 'PUT',
+        '/api/work-logs/*'),
+    (14, 'worklog:read:self', '查询个人工作日志', '工作日志', 'API', '/api/work-logs/mine', 'GET', 'GET',
+        '/api/work-logs/mine'),
+    (15, 'worklog:read:all', '查询全部工作日志', '工作日志', 'API', '/api/work-logs', 'GET', 'GET',
+        '/api/work-logs'),
+    (16, 'performance:read', '查询绩效记录', '绩效管理', 'API', '/api/performances/**', 'GET', 'GET',
+        '/api/performances/**'),
+    (17, 'performance:write', '维护绩效记录', '绩效管理', 'API', '/api/performances/**', 'POST,PUT',
+        'POST,PUT', '/api/performances/**'),
+    (18, 'performance:read:self', '查询个人绩效', '绩效管理', 'API', '/api/performances/mine', 'GET', 'GET',
+        '/api/performances/mine')
 ON DUPLICATE KEY UPDATE
     permission_name = VALUES(permission_name),
     module_name = VALUES(module_name),
@@ -50,8 +64,11 @@ INSERT IGNORE INTO sys_role_permission (id, role_id, permission_id)
 VALUES
     (1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 1, 4), (5, 1, 5),
     (6, 1, 6), (7, 1, 7), (8, 1, 8), (9, 1, 9), (10, 1, 10), (21, 1, 11),
+    (22, 1, 12), (23, 1, 13), (24, 1, 14), (25, 1, 15), (26, 1, 16), (27, 1, 17), (28, 1, 18),
     (11, 2, 5), (12, 2, 7), (13, 2, 8), (14, 2, 9), (19, 2, 11),
-    (15, 3, 4), (16, 3, 5), (17, 3, 6), (18, 3, 9), (20, 3, 11);
+    (29, 2, 15), (30, 2, 16), (31, 2, 17),
+    (15, 3, 4), (16, 3, 5), (17, 3, 6), (18, 3, 9), (20, 3, 11),
+    (32, 3, 12), (33, 3, 13), (34, 3, 14), (35, 3, 18);
 
 INSERT INTO sys_user (id, username, password_hash, phone, email, real_name, department_id, status)
 VALUES

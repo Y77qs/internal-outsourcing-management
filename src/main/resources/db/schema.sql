@@ -153,6 +153,87 @@ CREATE TABLE IF NOT EXISTS operation_log (
     KEY idx_operation_module_type (module_name, operation_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE IF NOT EXISTS work_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    project_id BIGINT NOT NULL,
+    work_date DATE NOT NULL,
+    work_content VARCHAR(2000) NOT NULL,
+    issue_record VARCHAR(1000) NULL,
+    completion_status VARCHAR(1000) NOT NULL,
+    submitted_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_work_log_user_date (user_id, work_date),
+    KEY idx_work_log_project_date (project_id, work_date),
+    KEY idx_work_log_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS performance_record (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    evaluator_user_id BIGINT NOT NULL,
+    evaluated_user_id BIGINT NOT NULL,
+    project_id BIGINT NOT NULL,
+    period_type VARCHAR(32) NOT NULL,
+    period_value VARCHAR(32) NOT NULL,
+    grade VARCHAR(8) NOT NULL,
+    comment VARCHAR(1000) NULL,
+    is_current TINYINT(1) NOT NULL DEFAULT 1,
+    current_unique_key VARCHAR(160) GENERATED ALWAYS AS (
+        CASE
+            WHEN is_current = 1 THEN CONCAT(evaluated_user_id, '#', project_id, '#', period_type, '#', period_value)
+            ELSE NULL
+        END
+    ) STORED,
+    modification_reason VARCHAR(1000) NULL,
+    effective_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_performance_current_active (current_unique_key),
+    KEY idx_performance_current (evaluated_user_id, project_id, period_type, period_value, is_current),
+    KEY idx_performance_project_period (project_id, period_type, period_value),
+    KEY idx_performance_evaluator_time (evaluator_user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+UPDATE performance_record pr
+JOIN (
+    SELECT evaluated_user_id, project_id, period_type, period_value, MAX(id) AS keep_id
+    FROM performance_record
+    WHERE is_current = 1
+    GROUP BY evaluated_user_id, project_id, period_type, period_value
+    HAVING COUNT(*) > 1
+) duplicate_current
+    ON pr.evaluated_user_id = duplicate_current.evaluated_user_id
+    AND pr.project_id = duplicate_current.project_id
+    AND pr.period_type = duplicate_current.period_type
+    AND pr.period_value = duplicate_current.period_value
+SET pr.is_current = 0,
+    pr.modification_reason = COALESCE(pr.modification_reason, '迁移归档重复当前绩效记录')
+WHERE pr.is_current = 1 AND pr.id <> duplicate_current.keep_id;
+
+SET @ddl = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE performance_record ADD COLUMN current_unique_key VARCHAR(160) GENERATED ALWAYS AS (CASE WHEN is_current = 1 THEN CONCAT(evaluated_user_id, ''#'', project_id, ''#'', period_type, ''#'', period_value) ELSE NULL END) STORED AFTER is_current',
+        'SELECT 1')
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'performance_record' AND COLUMN_NAME = 'current_unique_key'
+);
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @ddl = (
+    SELECT IF(COUNT(*) = 0,
+        'CREATE UNIQUE INDEX uk_performance_current_active ON performance_record (current_unique_key)',
+        'SELECT 1')
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'performance_record'
+        AND INDEX_NAME = 'uk_performance_current_active'
+);
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- 兼容已有 Docker 数据卷：MySQL 8.4 不支持 ADD COLUMN IF NOT EXISTS，使用 PREPARE 做条件补列。
 SET @ddl = (
     SELECT IF(COUNT(*) = 0, 'ALTER TABLE sys_user ADD COLUMN department_id BIGINT NULL AFTER real_name', 'SELECT 1')

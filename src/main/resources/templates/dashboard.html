@@ -32,6 +32,14 @@
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
                 <i class="bi bi-ui-checks"></i><span>领导审批</span>
             </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
+            </a>
             <a class="app-nav-link" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>
             </a>
@@ -142,6 +150,24 @@
                             </div>
                         </div>
                     </article>
+                    <article class="metric-card soft-card" data-permission-any="worklog:read:self,worklog:read:all">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="metric-icon"><i class="bi bi-journal-text"></i></span>
+                            <div>
+                                <div class="metric-label">工作日志</div>
+                                <div id="dashboardWorkLogCount" class="metric-value">-</div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="metric-card soft-card" data-permission-any="performance:read:self,performance:read">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="metric-icon"><i class="bi bi-award"></i></span>
+                            <div>
+                                <div class="metric-label">绩效记录</div>
+                                <div id="dashboardPerformanceCount" class="metric-value">-</div>
+                            </div>
+                        </div>
+                    </article>
                 </section>
                 <section class="module-grid">
                     <a class="module-card soft-card" href="/ui/applications" data-permission="application:read:self">
@@ -163,6 +189,22 @@
                         <div>
                             <h3>用户管理</h3>
                             <p>创建内部账号，维护角色与启禁用状态。</p>
+                        </div>
+                    </a>
+                    <a class="module-card soft-card" href="/ui/work-logs"
+                       data-permission-any="worklog:read:self,worklog:read:all">
+                        <span class="module-icon"><i class="bi bi-journal-text"></i></span>
+                        <div>
+                            <h3>工作日志</h3>
+                            <p>提交每日工作记录，按人员、项目和日期查询。</p>
+                        </div>
+                    </a>
+                    <a class="module-card soft-card" href="/ui/performances"
+                       data-permission-any="performance:read:self,performance:read">
+                        <span class="module-icon"><i class="bi bi-award"></i></span>
+                        <div>
+                            <h3>绩效管理</h3>
+                            <p>维护 A/B/C 绩效等级，查看当前记录和历史。</p>
                         </div>
                     </a>
                     <a class="module-card soft-card" href="/ui/operation-logs" data-permission="operation:read">
@@ -198,6 +240,14 @@
             </a>
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
                 <i class="bi bi-ui-checks"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
             </a>
             <a class="app-nav-link" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>

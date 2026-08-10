@@ -2,6 +2,11 @@ server:
   port: 8080
   servlet:
     context-path: /
+  tomcat:
+    threads:
+      max: ${TOMCAT_MAX_THREADS:200}
+      min-spare: ${TOMCAT_MIN_SPARE_THREADS:20}
+    accept-count: ${TOMCAT_ACCEPT_COUNT:100}
 
 spring:
   application:
@@ -54,6 +59,24 @@ app:
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
   security:
     session-prefix: pta:login:jti
+  elasticsearch:
+    enabled: ${ELASTICSEARCH_ENABLED:true}
+    url: ${ELASTICSEARCH_URL:http://localhost:9200}
+    index-name: ${ELASTICSEARCH_INDEX_NAME:pta-operation-logs}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 springdoc:
   api-docs:

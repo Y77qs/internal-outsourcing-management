@@ -69,6 +69,26 @@ public class UiController {
     }
 
     /**
+     * 返回工作日志页面模板。
+     *
+     * @return `work-logs` Thymeleaf 模板名称。
+     */
+    @GetMapping("/ui/work-logs")
+    public String workLogs() {
+        return "work-logs";
+    }
+
+    /**
+     * 返回绩效管理页面模板。
+     *
+     * @return `performances` Thymeleaf 模板名称。
+     */
+    @GetMapping("/ui/performances")
+    public String performances() {
+        return "performances";
+    }
+
+    /**
      * 返回用户管理页面模板。
      *
      * @return `users` Thymeleaf 模板名称。

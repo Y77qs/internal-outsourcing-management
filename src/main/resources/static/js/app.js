@@ -5,7 +5,15 @@ let availableRoles = [];
 let availableDepartments = [];
 let availableProjects = [];
 let latestUsers = [];
+let latestWorkLogs = [];
+let latestPerformances = [];
+let performanceFilterUserOptions = [];
+let performanceModalUserOptions = [];
+let performanceFilterUserTimer = null;
+let performanceModalUserTimer = null;
 let editingRoleUserId = null;
+let editingWorkLogId = null;
+let editingPerformanceId = null;
 
 const page = document.body.dataset.page;
 const publicPages = new Set(["login", "register"]);
@@ -34,6 +42,10 @@ async function initSecuredPage() {
             await initApplications();
         } else if (page === "approvals") {
             await initApprovals();
+        } else if (page === "work-logs") {
+            await initWorkLogs();
+        } else if (page === "performances") {
+            await initPerformances();
         } else if (page === "users") {
             await initUsers();
         } else if (page === "notifications") {
@@ -120,7 +132,15 @@ async function initDashboard() {
         loadDashboardCount("#dashboardApplicationCount", "/api/onboarding/applications/mine?pageNo=1&pageSize=1",
                 "application:read:self"),
         loadDashboardCount("#dashboardPendingCount", "/api/approvals/pending?pageNo=1&pageSize=1", "approval:read"),
-        loadDashboardCount("#dashboardNotificationCount", "/api/notifications?pageNo=1&pageSize=1", "notification:read")
+        loadDashboardCount("#dashboardNotificationCount", "/api/notifications?pageNo=1&pageSize=1", "notification:read"),
+        loadDashboardAnyCount("#dashboardWorkLogCount", [
+            ["worklog:read:all", "/api/work-logs?pageNo=1&pageSize=1"],
+            ["worklog:read:self", "/api/work-logs/mine?pageNo=1&pageSize=1"]
+        ]),
+        loadDashboardAnyCount("#dashboardPerformanceCount", [
+            ["performance:read", "/api/performances?current=true&pageNo=1&pageSize=1"],
+            ["performance:read:self", "/api/performances/mine?current=true&pageNo=1&pageSize=1"]
+        ])
     ]);
 }
 
@@ -223,6 +243,593 @@ async function initApprovals() {
         }
     });
     await loadApprovals();
+}
+
+async function initWorkLogs() {
+    await loadBasicOptions();
+    renderProjectSelect("#workLogProjectFilter", true);
+    renderProjectSelect("#workLogProjectId", false);
+    document.querySelector("#workLogDate").value = new Date().toISOString().slice(0, 10);
+    document.querySelector("#searchWorkLogs").addEventListener("click", loadWorkLogs);
+    document.querySelector("#reloadWorkLogs").addEventListener("click", loadWorkLogs);
+    document.querySelectorAll("[data-action='new-work-log']").forEach(button => {
+        button.addEventListener("click", openNewWorkLogModal);
+    });
+    document.querySelector("#workLogForm")?.addEventListener("submit", saveWorkLog);
+    document.querySelector("#workLogRows").addEventListener("click", event => {
+        const button = event.target.closest("button[data-action='edit-work-log']");
+        if (!button) {
+            return;
+        }
+        const workLog = latestWorkLogs.find(item => String(item.id) === button.dataset.id);
+        if (workLog) {
+            openEditWorkLogModal(workLog);
+        }
+    });
+    document.querySelector("#workLogAllFilters")?.classList.toggle("d-none", !hasClientPermission("worklog:read:all"));
+    await loadWorkLogs();
+}
+
+async function loadWorkLogs() {
+    const rows = document.querySelector("#workLogRows");
+    rows.innerHTML = loadingRow(8);
+    const params = new URLSearchParams();
+    const projectId = document.querySelector("#workLogProjectFilter").value;
+    const startDate = document.querySelector("#workLogStartDate").value;
+    const endDate = document.querySelector("#workLogEndDate").value;
+    const userId = document.querySelector("#workLogUserId")?.value;
+    if (projectId) {
+        params.set("projectId", projectId);
+    }
+    if (startDate) {
+        params.set("startDate", startDate);
+    }
+    if (endDate) {
+        params.set("endDate", endDate);
+    }
+    if (userId && hasClientPermission("worklog:read:all")) {
+        params.set("userId", userId);
+    }
+    params.set("pageNo", "1");
+    params.set("pageSize", "20");
+    const endpoint = hasClientPermission("worklog:read:all") ? "/api/work-logs" : "/api/work-logs/mine";
+    const pageData = await api(`${endpoint}?${params.toString()}`);
+    latestWorkLogs = pageData.records;
+    document.querySelector("#workLogCount").textContent = `共 ${pageData.total} 条`;
+    if (latestWorkLogs.length === 0) {
+        rows.innerHTML = emptyRow(8, "暂无工作日志", "bi-journal-plus");
+        return;
+    }
+    rows.innerHTML = latestWorkLogs.map(workLog => `
+        <tr>
+            <td>${workLog.id}</td>
+            <td>${escapeHtml(workLog.realName || workLog.username || "")}</td>
+            <td>${escapeHtml(workLog.projectName || "")}</td>
+            <td>${workLog.workDate || ""}</td>
+            <td class="text-truncate-cell" title="${escapeHtml(workLog.workContent || "")}">
+                ${escapeHtml(workLog.workContent || "")}
+            </td>
+            <td class="text-truncate-cell" title="${escapeHtml(workLog.issueRecord || "")}">
+                ${escapeHtml(workLog.issueRecord || "")}
+            </td>
+            <td class="text-truncate-cell" title="${escapeHtml(workLog.completionStatus || "")}">
+                ${escapeHtml(workLog.completionStatus || "")}
+            </td>
+            <td class="text-end">
+                ${canEditWorkLog(workLog)
+                    ? `<button class="btn btn-outline-primary btn-sm btn-icon" data-action="edit-work-log"
+                               data-id="${workLog.id}" type="button">
+                           <i class="bi bi-pencil-square"></i><span>修改</span>
+                       </button>`
+                    : ""}
+            </td>
+        </tr>
+    `).join("");
+}
+
+function openNewWorkLogModal() {
+    editingWorkLogId = null;
+    document.querySelector("#workLogModalTitle").textContent = "提交工作日志";
+    document.querySelector("#workLogForm").reset();
+    renderProjectSelect("#workLogProjectId", false);
+    document.querySelector("#workLogDate").value = new Date().toISOString().slice(0, 10);
+    bootstrap.Modal.getOrCreateInstance(document.querySelector("#workLogModal")).show();
+}
+
+function openEditWorkLogModal(workLog) {
+    editingWorkLogId = workLog.id;
+    document.querySelector("#workLogModalTitle").textContent = `修改工作日志 #${workLog.id}`;
+    renderProjectSelect("#workLogProjectId", false);
+    document.querySelector("#workLogProjectId").value = String(workLog.projectId);
+    document.querySelector("#workLogDate").value = workLog.workDate || "";
+    document.querySelector("#workContent").value = workLog.workContent || "";
+    document.querySelector("#issueRecord").value = workLog.issueRecord || "";
+    document.querySelector("#completionStatus").value = workLog.completionStatus || "";
+    bootstrap.Modal.getOrCreateInstance(document.querySelector("#workLogModal")).show();
+}
+
+async function saveWorkLog(event) {
+    event.preventDefault();
+    const payload = Object.fromEntries(new FormData(event.target).entries());
+    payload.projectId = Number(payload.projectId);
+    const path = editingWorkLogId ? `/api/work-logs/${editingWorkLogId}` : "/api/work-logs";
+    const method = editingWorkLogId ? "PUT" : "POST";
+    try {
+        await api(path, {method, body: payload});
+        closeModal("#workLogModal");
+        showAlert("工作日志已保存。", "success");
+        await loadWorkLogs();
+    } catch (error) {
+        showAlert(error.message, "danger");
+    }
+}
+
+function canEditWorkLog(workLog) {
+    return hasClientPermission("worklog:update:self") && currentUser && currentUser.id === workLog.userId;
+}
+
+async function initPerformances() {
+    await loadBasicOptions();
+    renderProjectSelect("#performanceProjectFilter", true);
+    renderProjectSelect("#performanceProjectId", false);
+    bindPerformanceUserSearch();
+    document.querySelector("#searchPerformances").addEventListener("click", loadPerformances);
+    document.querySelector("#reloadPerformances").addEventListener("click", loadPerformances);
+    document.querySelectorAll("[data-action='new-performance']").forEach(button => {
+        button.addEventListener("click", openNewPerformanceModal);
+    });
+    document.querySelector("#performanceForm")?.addEventListener("submit", savePerformance);
+    document.querySelector("#periodType")?.addEventListener("change", () => updatePeriodValueState());
+    document.querySelector("#performanceRows").addEventListener("click", event => {
+        const button = event.target.closest("button[data-action='edit-performance']");
+        if (!button) {
+            return;
+        }
+        const performance = latestPerformances.find(item => String(item.id) === button.dataset.id);
+        if (performance) {
+            openEditPerformanceModal(performance);
+        }
+    });
+    document.querySelector("#performanceAllFilters")?.classList.toggle("d-none",
+            !hasClientPermission("performance:read"));
+    await loadPerformances();
+}
+
+function bindPerformanceUserSearch() {
+    const filterName = document.querySelector("#performanceUserName");
+    const filterId = document.querySelector("#performanceUserId");
+    const modalName = document.querySelector("#evaluatedUserName");
+    const modalId = document.querySelector("#evaluatedUserIdInput");
+    filterName?.addEventListener("input", () => schedulePerformanceUserSearch("filter", "name"));
+    filterId?.addEventListener("change", () => schedulePerformanceUserSearch("filter", "id", 0));
+    modalName?.addEventListener("input", () => schedulePerformanceUserSearch("modal", "name"));
+    modalId?.addEventListener("change", () => schedulePerformanceUserSearch("modal", "id", 0));
+    document.querySelector("#performanceUserMatches")?.addEventListener("click", handlePerformanceUserOptionClick);
+    document.querySelector("#evaluatedUserMatches")?.addEventListener("click", handlePerformanceUserOptionClick);
+}
+
+function schedulePerformanceUserSearch(scope, mode, delay = 350) {
+    const timerName = scope === "filter" ? "performanceFilterUserTimer" : "performanceModalUserTimer";
+    clearTimeout(scope === "filter" ? performanceFilterUserTimer : performanceModalUserTimer);
+    const timer = setTimeout(() => {
+        refreshPerformanceUserOptions(scope, mode).catch(error => showAlert(error.message, "danger"));
+    }, delay);
+    if (timerName === "performanceFilterUserTimer") {
+        performanceFilterUserTimer = timer;
+    } else {
+        performanceModalUserTimer = timer;
+    }
+}
+
+async function refreshPerformanceUserOptions(scope, mode) {
+    const controls = performanceUserControls(scope);
+    if (!controls.nameInput || !controls.idInput) {
+        return [];
+    }
+    if (mode === "name") {
+        controls.idInput.value = "";
+        if (controls.hiddenInput) {
+            controls.hiddenInput.value = "";
+        }
+    }
+    const userId = controls.idInput.value.trim();
+    const name = controls.nameInput.value.trim();
+    if (!userId && !name) {
+        setPerformanceUserOptions(scope, []);
+        return [];
+    }
+    const options = await searchPerformanceUserOptions(userId ? {userId} : {name});
+    setPerformanceUserOptions(scope, options);
+    if (userId && options.length === 1) {
+        controls.nameInput.value = options[0].realName || options[0].username || "";
+        if (controls.hiddenInput) {
+            controls.hiddenInput.value = options[0].id;
+        }
+        renderPerformanceUserSelection(scope);
+    }
+    return options;
+}
+
+async function searchPerformanceUserOptions(query) {
+    const params = new URLSearchParams();
+    if (query.userId) {
+        params.set("userId", query.userId);
+    }
+    if (query.name) {
+        params.set("name", query.name);
+    }
+    return api(`/api/performances/user-options?${params.toString()}`);
+}
+
+function performanceUserControls(scope) {
+    if (scope === "filter") {
+        return {
+            nameInput: document.querySelector("#performanceUserName"),
+            idInput: document.querySelector("#performanceUserId"),
+            optionList: document.querySelector("#performanceUserMatches"),
+            hiddenInput: null
+        };
+    }
+    return {
+        nameInput: document.querySelector("#evaluatedUserName"),
+        idInput: document.querySelector("#evaluatedUserIdInput"),
+        optionList: document.querySelector("#evaluatedUserMatches"),
+        hiddenInput: document.querySelector("#evaluatedUserId")
+    };
+}
+
+function setPerformanceUserOptions(scope, options) {
+    const controls = performanceUserControls(scope);
+    if (scope === "filter") {
+        performanceFilterUserOptions = options;
+    } else {
+        performanceModalUserOptions = options;
+    }
+    if (controls.optionList) {
+        controls.optionList.innerHTML = performanceUserOptionsHtml(scope, options, controls);
+    }
+    if (scope === "modal" && options.length === 1 && controls.hiddenInput && !controls.idInput.value) {
+        controls.idInput.value = options[0].id;
+        controls.hiddenInput.value = options[0].id;
+        renderPerformanceUserSelection(scope);
+    }
+}
+
+function performanceUserOptionsHtml(scope, options, controls) {
+    if (options.length === 0) {
+        if (!controls.nameInput?.value.trim() && !controls.idInput?.value.trim()) {
+            return "";
+        }
+        return `<div class="user-option-empty">未匹配到人员。</div>`;
+    }
+    const allOption = scope === "filter" && options.length > 1
+            ? userOptionButtonHtml("all", `全部匹配人员：ID ${options.map(user => user.id).join("、")}`,
+                    "默认查询全部匹配人员", !controls.idInput.value)
+            : "";
+    return allOption + options.map(user => userOptionButtonHtml(user.id, userOptionLabel(user), user.status,
+            String(controls.idInput.value) === String(user.id))).join("");
+}
+
+function userOptionButtonHtml(value, label, meta, active) {
+    return `
+        <button class="user-option-button ${active ? "active" : ""}" type="button" data-user-option="${value}">
+            <span class="user-option-main">${escapeHtml(label)}</span>
+            <span class="user-option-meta">${escapeHtml(meta || "")}</span>
+        </button>
+    `;
+}
+
+function handlePerformanceUserOptionClick(event) {
+    const button = event.target.closest("button[data-user-option]");
+    if (!button) {
+        return;
+    }
+    const scope = button.closest("#performanceUserMatches") ? "filter" : "modal";
+    const value = button.dataset.userOption;
+    if (value === "all") {
+        selectAllPerformanceUsers(scope);
+        return;
+    }
+    selectPerformanceUser(scope, Number(value));
+}
+
+function selectAllPerformanceUsers(scope) {
+    const controls = performanceUserControls(scope);
+    controls.idInput.value = "";
+    if (controls.hiddenInput) {
+        controls.hiddenInput.value = "";
+    }
+    renderPerformanceUserSelection(scope);
+}
+
+function selectPerformanceUser(scope, userId) {
+    const options = scope === "filter" ? performanceFilterUserOptions : performanceModalUserOptions;
+    const selected = options.find(user => Number(user.id) === Number(userId));
+    const controls = performanceUserControls(scope);
+    controls.idInput.value = String(userId);
+    if (selected && controls.nameInput) {
+        controls.nameInput.value = selected.realName || selected.username || "";
+    }
+    if (controls.hiddenInput) {
+        controls.hiddenInput.value = String(userId);
+    }
+    renderPerformanceUserSelection(scope);
+}
+
+function renderPerformanceUserSelection(scope) {
+    const controls = performanceUserControls(scope);
+    const buttons = controls.optionList?.querySelectorAll("button[data-user-option]") || [];
+    buttons.forEach(button => {
+        const value = button.dataset.userOption;
+        button.classList.toggle("active", value === "all" ? !controls.idInput.value
+                : String(controls.idInput.value) === value);
+    });
+}
+
+function userOptionLabel(user) {
+    return `ID ${user.id} - ${user.realName || "未填写姓名"} - ${user.username || ""}`;
+}
+
+async function appendPerformanceUserParams(params) {
+    const nameInput = document.querySelector("#performanceUserName");
+    const idInput = document.querySelector("#performanceUserId");
+    const evaluatedUserId = idInput?.value.trim();
+    const evaluatedUserName = nameInput?.value.trim();
+    if (evaluatedUserId) {
+        params.set("evaluatedUserId", evaluatedUserId);
+        await refreshPerformanceUserOptions("filter", "id");
+        return;
+    }
+    if (!evaluatedUserName) {
+        setPerformanceUserOptions("filter", []);
+        return;
+    }
+    const options = await refreshPerformanceUserOptions("filter", "name");
+    if (options.length === 0) {
+        params.set("evaluatedUserId", "-1");
+        return;
+    }
+    options.forEach(user => params.append("evaluatedUserIds", user.id));
+}
+
+async function loadPerformances() {
+    const rows = document.querySelector("#performanceRows");
+    rows.innerHTML = loadingRow(9);
+    const params = new URLSearchParams();
+    const projectId = document.querySelector("#performanceProjectFilter").value;
+    const periodType = document.querySelector("#performancePeriodFilter").value;
+    const current = document.querySelector("#performanceCurrentOnly").checked;
+    if (projectId) {
+        params.set("projectId", projectId);
+    }
+    if (hasClientPermission("performance:read")) {
+        await appendPerformanceUserParams(params);
+    }
+    if (periodType) {
+        params.set("periodType", periodType);
+    }
+    if (current) {
+        params.set("current", "true");
+    }
+    params.set("pageNo", "1");
+    params.set("pageSize", "20");
+    const endpoint = hasClientPermission("performance:read") ? "/api/performances" : "/api/performances/mine";
+    const pageData = await api(`${endpoint}?${params.toString()}`);
+    latestPerformances = pageData.records;
+    document.querySelector("#performanceCount").textContent = `共 ${pageData.total} 条`;
+    if (latestPerformances.length === 0) {
+        rows.innerHTML = emptyRow(9, "暂无绩效记录", "bi-award");
+        return;
+    }
+    rows.innerHTML = latestPerformances.map(performance => `
+        <tr>
+            <td>${performance.id}</td>
+            <td>
+                <div>${escapeHtml(performance.evaluatedRealName || performance.evaluatedUsername || "")}</div>
+                <div class="small text-muted">ID ${performance.evaluatedUserId}</div>
+            </td>
+            <td>${escapeHtml(performance.projectName || "")}</td>
+            <td>${escapeHtml(performance.periodType || "")}</td>
+            <td>${escapeHtml(performance.periodValue || "")}</td>
+            <td>${gradeBadge(performance.grade)}</td>
+            <td>${performance.current ? badge("ENABLED") : badge("DISABLED")}</td>
+            <td class="text-truncate-cell" title="${escapeHtml(performance.comment || "")}">
+                ${escapeHtml(performance.comment || "")}
+            </td>
+            <td class="text-end">
+                ${canEditPerformance(performance)
+                    ? `<button class="btn btn-outline-primary btn-sm btn-icon" data-action="edit-performance"
+                               data-id="${performance.id}" type="button">
+                           <i class="bi bi-pencil-square"></i><span>修改</span>
+                       </button>`
+                    : ""}
+            </td>
+        </tr>
+    `).join("");
+}
+
+function openNewPerformanceModal() {
+    editingPerformanceId = null;
+    document.querySelector("#performanceModalTitle").textContent = "新增绩效记录";
+    document.querySelector("#performanceForm").reset();
+    renderProjectSelect("#performanceProjectId", false);
+    document.querySelector("#periodType").value = "MONTH";
+    document.querySelector("#modificationReasonGroup").classList.add("d-none");
+    document.querySelector("#modificationReason").required = false;
+    document.querySelector("#evaluatedUserName").disabled = false;
+    document.querySelector("#evaluatedUserIdInput").disabled = false;
+    document.querySelector("#evaluatedUserId").value = "";
+    document.querySelector("#performanceProjectId").disabled = false;
+    document.querySelector("#periodType").disabled = false;
+    document.querySelector("#periodValue").disabled = false;
+    setPerformanceUserOptions("modal", []);
+    updatePeriodValueState(currentMonthPeriodValue());
+    bootstrap.Modal.getOrCreateInstance(document.querySelector("#performanceModal")).show();
+}
+
+function openEditPerformanceModal(performance) {
+    editingPerformanceId = performance.id;
+    document.querySelector("#performanceModalTitle").textContent = `修改绩效 #${performance.id}`;
+    renderProjectSelect("#performanceProjectId", false);
+    document.querySelector("#evaluatedUserId").value = performance.evaluatedUserId;
+    document.querySelector("#evaluatedUserIdInput").value = performance.evaluatedUserId;
+    document.querySelector("#evaluatedUserName").value = performance.evaluatedRealName || performance.evaluatedUsername || "";
+    document.querySelector("#performanceProjectId").value = String(performance.projectId);
+    document.querySelector("#periodType").value = performance.periodType;
+    document.querySelector("#performanceGrade").value = performance.grade;
+    document.querySelector("#performanceComment").value = performance.comment || "";
+    document.querySelector("#modificationReason").value = "";
+    document.querySelector("#modificationReasonGroup").classList.remove("d-none");
+    document.querySelector("#modificationReason").required = true;
+    document.querySelector("#evaluatedUserName").disabled = true;
+    document.querySelector("#evaluatedUserIdInput").disabled = true;
+    document.querySelector("#performanceProjectId").disabled = true;
+    document.querySelector("#periodType").disabled = true;
+    document.querySelector("#periodValue").disabled = true;
+    setPerformanceUserOptions("modal", [{
+        id: performance.evaluatedUserId,
+        username: performance.evaluatedUsername,
+        realName: performance.evaluatedRealName,
+        status: "ENABLED"
+    }]);
+    updatePeriodValueState(performance.periodValue);
+    bootstrap.Modal.getOrCreateInstance(document.querySelector("#performanceModal")).show();
+}
+
+async function savePerformance(event) {
+    event.preventDefault();
+    if (!editingPerformanceId && !(await resolvePerformanceModalUserId())) {
+        return;
+    }
+    const formData = new FormData(event.target);
+    const payload = compactObject(Object.fromEntries(formData.entries()));
+    const method = editingPerformanceId ? "PUT" : "POST";
+    const path = editingPerformanceId ? `/api/performances/${editingPerformanceId}` : "/api/performances";
+    if (!editingPerformanceId) {
+        payload.evaluatedUserId = Number(payload.evaluatedUserId);
+        payload.projectId = Number(payload.projectId);
+    }
+    try {
+        await api(path, {method, body: payload});
+        closeModal("#performanceModal");
+        showAlert("绩效记录已保存。", "success");
+        await loadPerformances();
+    } catch (error) {
+        showAlert(error.message, "danger");
+    }
+}
+
+async function resolvePerformanceModalUserId() {
+    const controls = performanceUserControls("modal");
+    const selectedUserId = controls.idInput?.value.trim();
+    if (!selectedUserId) {
+        if (controls.nameInput?.value.trim()) {
+            const options = await refreshPerformanceUserOptions("modal", "name");
+            if (options.length > 1) {
+                showAlert("存在多个同名人员，请选择具体人员 ID。", "warning");
+                return false;
+            }
+            if (options.length === 1) {
+                controls.hiddenInput.value = options[0].id;
+                return true;
+            }
+        }
+        showAlert("请选择被评价用户 ID。", "warning");
+        return false;
+    }
+    controls.hiddenInput.value = selectedUserId;
+    return true;
+}
+
+function updatePeriodValueState(preferredValue) {
+    const periodType = document.querySelector("#periodType")?.value;
+    const periodValue = document.querySelector("#periodValue");
+    if (!periodValue) {
+        return;
+    }
+    const selectedValue = resolvePeriodValue(periodType, preferredValue ?? periodValue.value);
+    periodValue.innerHTML = periodValueOptionsHtml(periodType, selectedValue);
+    periodValue.value = selectedValue;
+    periodValue.disabled = Boolean(editingPerformanceId) || periodType === "PROJECT";
+    periodValue.required = periodType !== "PROJECT";
+}
+
+function periodValueOptionsHtml(periodType, selectedValue) {
+    if (periodType === "PROJECT") {
+        const label = selectedValue ? `${selectedValue}（由项目生成）` : "由项目自动生成";
+        return `<option value="${escapeHtml(selectedValue)}">${escapeHtml(label)}</option>`;
+    }
+    const values = periodType === "QUARTER" ? currentYearQuarterValues() : currentYearMonthValues();
+    if (selectedValue && !values.includes(selectedValue)) {
+        values.unshift(selectedValue);
+    }
+    return values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+}
+
+function resolvePeriodValue(periodType, value) {
+    if (periodType === "PROJECT") {
+        return editingPerformanceId && value ? value : "";
+    }
+    if (periodType === "QUARTER") {
+        return monthToQuarterValue(value) || quarterPeriodValue(value) || currentQuarterPeriodValue();
+    }
+    return quarterToMonthValue(value) || monthPeriodValue(value) || currentMonthPeriodValue();
+}
+
+function currentYearMonthValues() {
+    const year = new Date().getFullYear();
+    return Array.from({length: 12}, (_, index) => `${year}-${padTwo(index + 1)}`);
+}
+
+function currentYearQuarterValues() {
+    const year = new Date().getFullYear();
+    return [1, 2, 3, 4].map(quarter => `${year}-Q${quarter}`);
+}
+
+function currentMonthPeriodValue() {
+    const date = new Date();
+    return `${date.getFullYear()}-${padTwo(date.getMonth() + 1)}`;
+}
+
+function currentQuarterPeriodValue() {
+    const date = new Date();
+    return `${date.getFullYear()}-Q${Math.floor(date.getMonth() / 3) + 1}`;
+}
+
+function monthToQuarterValue(value) {
+    const month = monthPeriodValue(value);
+    if (!month) {
+        return "";
+    }
+    const [, year, monthNumber] = month.match(/^(\d{4})-(\d{2})$/);
+    return `${year}-Q${Math.floor((Number(monthNumber) - 1) / 3) + 1}`;
+}
+
+function quarterToMonthValue(value) {
+    const quarter = quarterPeriodValue(value);
+    if (!quarter) {
+        return "";
+    }
+    const [, year, quarterNumber] = quarter.match(/^(\d{4})-Q([1-4])$/);
+    return `${year}-${padTwo((Number(quarterNumber) - 1) * 3 + 1)}`;
+}
+
+function monthPeriodValue(value) {
+    const match = String(value || "").match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+    return match ? match[0] : "";
+}
+
+function quarterPeriodValue(value) {
+    const match = String(value || "").toUpperCase().match(/^(\d{4})-Q([1-4])$/);
+    return match ? match[0] : "";
+}
+
+function padTwo(value) {
+    return String(value).padStart(2, "0");
+}
+
+function canEditPerformance(performance) {
+    return hasClientPermission("performance:write") && performance.current;
 }
 
 async function loadApprovals() {
@@ -498,6 +1105,7 @@ async function loadOperationLogs() {
     const params = new URLSearchParams();
     const operatorId = document.querySelector("#logOperatorId").value;
     const moduleName = document.querySelector("#logModuleName").value;
+    const keyword = document.querySelector("#logKeyword").value;
     const startTime = document.querySelector("#logStartTime").value;
     const endTime = document.querySelector("#logEndTime").value;
     if (operatorId) {
@@ -505,6 +1113,9 @@ async function loadOperationLogs() {
     }
     if (moduleName) {
         params.set("moduleName", moduleName);
+    }
+    if (keyword) {
+        params.set("keyword", keyword);
     }
     if (startTime) {
         params.set("startTime", startTime);
@@ -570,6 +1181,17 @@ function renderProjectOptions() {
     select.disabled = projects.length === 0;
 }
 
+function renderProjectSelect(selector, includeEmpty) {
+    const select = document.querySelector(selector);
+    if (!select) {
+        return;
+    }
+    const empty = includeEmpty ? `<option value="">全部项目</option>` : "";
+    select.innerHTML = empty + availableProjects.map(project => `
+        <option value="${project.id}">${escapeHtml(project.projectName)}</option>
+    `).join("");
+}
+
 async function api(path, options = {}) {
     const request = {
         method: options.method || "GET",
@@ -630,6 +1252,14 @@ function applyPermissions() {
     const permissions = new Set(currentUser?.permissions || []);
     document.querySelectorAll("[data-permission]").forEach(element => {
         if (!permissions.has(element.dataset.permission)) {
+            element.classList.add("d-none");
+        }
+    });
+    document.querySelectorAll("[data-permission-any]").forEach(element => {
+        const anyPermission = element.dataset.permissionAny.split(",")
+                .map(item => item.trim())
+                .some(permission => permissions.has(permission));
+        if (!anyPermission) {
             element.classList.add("d-none");
         }
     });
@@ -718,6 +1348,20 @@ async function loadDashboardCount(selector, url, permission) {
     }
 }
 
+async function loadDashboardAnyCount(selector, options) {
+    const matched = options.find(([permission]) => hasClientPermission(permission));
+    if (!matched) {
+        setText(selector, "-");
+        return;
+    }
+    try {
+        const pageData = await api(matched[1]);
+        setText(selector, pageData.total ?? 0);
+    } catch (error) {
+        setText(selector, "-");
+    }
+}
+
 function badge(value) {
     const color = {
         ENABLED: "success",
@@ -731,6 +1375,15 @@ function badge(value) {
         SENT: "success"
     }[value] || "secondary";
     return `<span class="badge text-bg-${color} status-badge">${escapeHtml(statusLabel(value))}</span>`;
+}
+
+function gradeBadge(value) {
+    const color = {
+        A: "success",
+        B: "info",
+        C: "warning"
+    }[value] || "secondary";
+    return `<span class="badge text-bg-${color} status-badge">${escapeHtml(value || "")}</span>`;
 }
 
 function statusLabel(value) {

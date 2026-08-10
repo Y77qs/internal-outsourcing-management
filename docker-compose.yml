@@ -1,6 +1,41 @@
 name: pta
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/pta_outsourcing?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: pta
+      DB_PASSWORD: pta123456
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: pta
+      RABBITMQ_PASSWORD: pta123456
+      ELASTICSEARCH_ENABLED: "true"
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      TOMCAT_MAX_THREADS: 300
+      TOMCAT_MIN_SPARE_THREADS: 30
+      TOMCAT_ACCEPT_COUNT: 200
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
   mysql:
     image: mysql:8.4
     environment:
@@ -52,7 +87,54 @@ services:
       timeout: 5s
       retries: 10
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      TZ: Asia/Shanghai
+    ports:
+      - "9200:9200"
+    volumes:
+      - pta_elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - pta_prometheus_data:/prometheus
+    depends_on:
+      app:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      TZ: Asia/Shanghai
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - pta_grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+
 volumes:
   pta_mysql_data:
   pta_redis_data:
   pta_rabbitmq_data:
+  pta_elasticsearch_data:
+  pta_prometheus_data:
+  pta_grafana_data:

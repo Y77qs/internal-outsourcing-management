@@ -4,21 +4,12 @@
 /target/
 /.mvn/apache-maven-*/
 /.mvn/apache-maven-*-bin.zip
-
-# Local drafts and handoff notes
-/docs/*
-!/docs/design/
-!/docs/design/**
-!/docs/implementation/
-!/docs/implementation/**
-!/docs/screenshots/
-!/docs/screenshots/**
+/stitch-export/
 /week1/
 /week2/
-/stitch-export/
 /HANOFF.md
 /杨青硕工作总结.docx
-
-# Superseded root-level diagrams; public deliverables live in docs/design/
-/ER.drawio
-/ER.drawio.png
+jmeter.log
+*.jtl
+jmeter-results/
+week3-jmeter-results/

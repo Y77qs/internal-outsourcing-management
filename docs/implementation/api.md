@@ -22,9 +22,11 @@
 | `/ui/register` | 测试外包人员注册页，成功后自动登录进入工作台 |
 | `/ui/applications` | 上岗申请页，使用 Modal 新建申请和部门/项目下拉 |
 | `/ui/approvals` | 领导审批页，支持选中后批量处理和驳回意见 Modal |
+| `/ui/work-logs` | 工作日志页，外包人员提交/修改个人日志，领导和管理员查询全量日志 |
+| `/ui/performances` | 绩效管理页，维护 A/B/C 绩效等级并查看当前记录 |
 | `/ui/users` | 用户管理页，管理员可通过 Modal 创建内部账号并分配角色 |
 | `/ui/notifications` | 通知页 |
-| `/ui/operation-logs` | 操作日志页 |
+| `/ui/operation-logs` | 操作日志页，基于 MySQL 权威日志支持关键词检索 |
 
 ## 认证
 
@@ -118,11 +120,77 @@
 
 申请提交、撤回、审批通过、审批驳回都会写入 `notification_message`，并发送 RabbitMQ 消息。
 
+## 工作日志
+
+| 方法 | 路径 | 权限 | 说明 |
+| --- | --- | --- | --- |
+| POST | `/api/work-logs` | `worklog:create` | 测试外包人员提交工作日志 |
+| PUT | `/api/work-logs/{id}` | `worklog:update:self` | 修改自己的工作日志 |
+| GET | `/api/work-logs/mine` | `worklog:read:self` | 查询个人工作日志，可按项目和日期范围筛选 |
+| GET | `/api/work-logs` | `worklog:read:all` | 领导或管理员查询全部工作日志，可按人员、项目和日期范围筛选 |
+
+提交工作日志示例：
+
+```json
+{
+  "projectId": 1,
+  "workDate": "2026-08-08",
+  "workContent": "完成上岗申请、审批和通知流程回归测试",
+  "issueRecord": "发现审批意见为空时需要前端提示",
+  "completionStatus": "核心场景已完成验证"
+}
+```
+
+## 绩效管理
+
+| 方法 | 路径 | 权限 | 说明 |
+| --- | --- | --- | --- |
+| POST | `/api/performances` | `performance:write` | 领导或管理员新增绩效记录 |
+| PUT | `/api/performances/{id}` | `performance:write` | 修改当前有效绩效，系统保留历史版本 |
+| GET | `/api/performances` | `performance:read` | 领导或管理员查询绩效列表 |
+| GET | `/api/performances/user-options` | `performance:read` / `performance:write` | 按人员姓名或 ID 搜索绩效人员选项 |
+| GET | `/api/performances/{id}` | `performance:read` | 查询绩效详情 |
+| GET | `/api/performances/mine` | `performance:read:self` | 外包人员查询个人绩效 |
+| GET | `/api/performances/history` | `performance:read` | 查询指定人员绩效历史 |
+
+绩效列表支持 `evaluatedUserId` 单人员精确筛选，也支持重复传入 `evaluatedUserIds` 查询多个人员；当两个参数同时存在时，以 `evaluatedUserId` 为准。人员选项接口示例：`/api/performances/user-options?name=张三` 会按真实姓名模糊返回最多 20 条人员 ID，`/api/performances/user-options?userId=3` 会按 ID 精确返回对应人员。
+
+新增绩效示例：
+
+```json
+{
+  "evaluatedUserId": 3,
+  "projectId": 1,
+  "periodType": "MONTH",
+  "periodValue": "2026-08",
+  "grade": "A",
+  "comment": "按时完成测试任务，问题反馈及时"
+}
+```
+
+修改绩效示例：
+
+```json
+{
+  "grade": "B",
+  "comment": "根据补充验收结果调整评价",
+  "modificationReason": "补充回归测试结果后重新评定"
+}
+```
+
+绩效周期规则：
+
+- `MONTH` 使用 `yyyy-MM`。
+- `QUARTER` 使用 `yyyy-Qn`，例如 `2026-Q3`。
+- `PROJECT` 由服务端按 `projectId` 生成 `PROJECT-{projectId}`，请求体中可不传 `periodValue`。
+
+同一人员、同一项目、同一周期只保留一条当前有效记录；新增接口发现同周期已有当前记录时会拒绝创建，要求通过修改接口填写修改原因并生成新版本，旧记录会置为历史；Redis 分布式锁和数据库唯一索引共同避免并发覆盖。
+
 ## 操作日志
 
 | 方法 | 路径 | 权限 | 说明 |
 | --- | --- | --- | --- |
-| GET | `/api/operation-logs` | `operation:read` | 按操作人、模块、时间范围分页查询操作日志 |
+| GET | `/api/operation-logs` | `operation:read` | 按操作人、模块、关键词和时间范围分页查询操作日志 |
 
 查询参数：
 
@@ -130,6 +198,7 @@
 | --- | --- |
 | `operatorId` | 操作人 ID，可选 |
 | `moduleName` | 模块名称，支持模糊匹配 |
+| `keyword` | 关键词，按 MySQL 权威日志执行多字段模糊查询；Elasticsearch 仅保留 best-effort 索引同步，不作为查询权威来源 |
 | `startTime` | 开始时间，格式如 `2026-08-03T10:00:00` |
 | `endTime` | 结束时间，格式如 `2026-08-03T18:00:00` |
 | `pageNo` / `pageSize` | 分页参数 |

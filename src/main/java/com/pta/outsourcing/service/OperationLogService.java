@@ -35,6 +35,7 @@ public interface OperationLogService {
      *
      * @param operatorId 操作人 ID，可为空。
      * @param moduleName 模块名称，可为空。
+     * @param keyword 关键词，可为空。
      * @param startTime 开始时间，可为空。
      * @param endTime 结束时间，可为空。
      * @param pageNo 页码。
@@ -44,6 +45,7 @@ public interface OperationLogService {
     PageVO<OperationLogVO> pageLogs(
             Long operatorId,
             String moduleName,
+            String keyword,
             LocalDateTime startTime,
             LocalDateTime endTime,
             long pageNo,

@@ -3,6 +3,7 @@ package com.pta.outsourcing.aspect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pta.outsourcing.annotation.OperationLog;
+import com.pta.outsourcing.audit.OperationLogSanitizer;
 import com.pta.outsourcing.common.ResultVO;
 import com.pta.outsourcing.dto.LoginRequest;
 import com.pta.outsourcing.dto.RegisterRequest;
@@ -33,10 +34,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class OperationLogAspect {
 
-    private static final int MAX_PARAM_LENGTH = 1000;
-
     private final OperationLogService operationLogService;
     private final ObjectMapper objectMapper;
+    private final OperationLogSanitizer operationLogSanitizer;
 
     /**
      * 围绕标记了操作日志的方法采集成功和失败结果，异常继续交给全局异常处理。
@@ -49,7 +49,11 @@ public class OperationLogAspect {
             recordLog(joinPoint, operationLog, result, OperationResult.SUCCESS, null);
             return result;
         } catch (Throwable throwable) {
-            recordLog(joinPoint, operationLog, result, OperationResult.FAILED, throwable.getMessage());
+            try {
+                recordLog(joinPoint, operationLog, result, OperationResult.FAILED, throwable.getMessage());
+            } catch (RuntimeException logException) {
+                throwable.addSuppressed(logException);
+            }
             throw throwable;
         }
     }
@@ -129,9 +133,9 @@ public class OperationLogAspect {
             safeArgs.add(arg);
         }
         try {
-            return truncate(objectMapper.writeValueAsString(safeArgs));
+            return operationLogSanitizer.sanitize(objectMapper.writeValueAsString(safeArgs));
         } catch (JsonProcessingException exception) {
-            return truncate(safeArgs.toString());
+            return operationLogSanitizer.sanitize(safeArgs.toString());
         }
     }
 
@@ -145,13 +149,6 @@ public class OperationLogAspect {
             }
         }
         return false;
-    }
-
-    private String truncate(String params) {
-        if (params == null || params.length() <= MAX_PARAM_LENGTH) {
-            return params;
-        }
-        return params.substring(0, MAX_PARAM_LENGTH);
     }
 
     private record OperatorInfo(Long operatorId, String operatorName) {

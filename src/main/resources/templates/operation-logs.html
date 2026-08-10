@@ -32,6 +32,14 @@
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
                 <i class="bi bi-ui-checks"></i><span>领导审批</span>
             </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
+            </a>
             <a class="app-nav-link" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>
             </a>
@@ -101,6 +109,10 @@
                                     <input id="logModuleName" class="form-control" placeholder="认证 / 用户 / 审批">
                                 </div>
                                 <div>
+                                    <label for="logKeyword" class="form-label">关键词</label>
+                                    <input id="logKeyword" class="form-control" placeholder="路径 / 参数 / 错误">
+                                </div>
+                                <div>
                                     <label for="logStartTime" class="form-label">开始时间</label>
                                     <input id="logStartTime" type="datetime-local" class="form-control">
                                 </div>
@@ -159,6 +171,14 @@
             </a>
             <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
                 <i class="bi bi-ui-checks"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
             </a>
             <a class="app-nav-link" href="/ui/users" data-permission="user:read">
                 <i class="bi bi-people"></i><span>用户管理</span>

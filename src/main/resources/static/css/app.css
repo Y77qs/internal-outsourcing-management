@@ -429,6 +429,64 @@ a:hover {
     flex: 1;
 }
 
+.performance-user-filter {
+    grid-column: span 2;
+}
+
+.user-option-list {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+    min-height: 0;
+}
+
+.user-option-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--app-text);
+    font-size: 13px;
+    text-align: left;
+}
+
+.user-option-button:hover {
+    border-color: var(--app-primary);
+    background: #f0fdf4;
+}
+
+.user-option-button.active {
+    border-color: var(--app-primary);
+    background: #dcfce7;
+    color: #065f46;
+    font-weight: 700;
+}
+
+.user-option-main {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-option-meta {
+    flex: 0 0 auto;
+    color: var(--app-muted);
+    font-size: 12px;
+}
+
+.user-option-empty {
+    margin-top: 6px;
+    color: var(--app-muted);
+    font-size: 13px;
+}
+
 .toolbar-actions {
     display: inline-flex;
     align-items: center;
@@ -835,6 +893,10 @@ a:hover {
     .filter-grid {
         grid-template-columns: 1fr;
         width: 100%;
+    }
+
+    .performance-user-filter {
+        grid-column: auto;
     }
 
     .toolbar-actions,

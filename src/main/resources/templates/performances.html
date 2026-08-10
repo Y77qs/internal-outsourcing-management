@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>绩效管理 - 内部测试外包人员管理系统</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/webjars/bootstrap/5.3.8/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="performances">
+<div class="app-layout">
+    <aside class="app-sidebar d-none d-lg-flex flex-column">
+        <div class="app-brand">
+            <span class="brand-mark"><i class="bi bi-hexagon-fill"></i></span>
+            <div class="brand-copy">
+                <h1 class="brand-title">外包管理</h1>
+                <div class="brand-subtitle">内部管理平台</div>
+            </div>
+        </div>
+        <div class="sidebar-primary-action" data-permission="performance:write">
+            <button class="btn btn-primary btn-icon w-100" data-action="new-performance" type="button">
+                <i class="bi bi-plus-lg"></i><span>新增绩效</span>
+            </button>
+        </div>
+        <nav class="app-nav-group">
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-grid-1x2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
+                <i class="bi bi-file-earmark-text"></i><span>上岗申请</span>
+            </a>
+            <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
+                <i class="bi bi-ui-checks"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link active" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
+            </a>
+            <a class="app-nav-link" href="/ui/users" data-permission="user:read">
+                <i class="bi bi-people"></i><span>用户管理</span>
+            </a>
+            <a class="app-nav-link" href="/ui/notifications" data-permission="notification:read">
+                <i class="bi bi-bell"></i><span>通知消息</span>
+            </a>
+            <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
+                <i class="bi bi-clock-history"></i><span>操作日志</span>
+            </a>
+        </nav>
+        <div class="app-sidebar-footer">
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>接口文档</span></a>
+        </div>
+    </aside>
+    <div class="app-main">
+        <header class="app-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-secondary icon-only d-lg-none" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-label="打开导航">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h2 class="topbar-title">Performance</h2>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="topbar-search">
+                    <i class="bi bi-search"></i>
+                    <input class="form-control" placeholder="搜索绩效记录" type="search">
+                </div>
+                <a class="icon-circle topbar-utility position-relative" href="/ui/notifications"
+                   data-permission="notification:read" aria-label="通知消息">
+                    <i class="bi bi-bell"></i>
+                    <span class="position-absolute top-0 end-0 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </a>
+                <a class="icon-circle topbar-utility" href="/doc.html" aria-label="接口文档">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </a>
+                <div class="topbar-user">
+                    <span class="user-avatar"><i class="bi bi-person"></i></span>
+                    <span id="currentUser" class="fw-semibold"></span>
+                </div>
+                <button id="logoutButton" class="btn btn-outline-secondary btn-sm btn-icon" type="button">
+                    <i class="bi bi-box-arrow-right"></i><span>退出</span>
+                </button>
+            </div>
+        </header>
+        <main class="app-content">
+            <div class="content-shell">
+                <div id="alert" class="alert d-none" role="alert"></div>
+                <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+                <div class="page-header">
+                    <div>
+                        <div class="page-eyebrow">PERFORMANCE</div>
+                        <h1 class="page-title">绩效管理</h1>
+                        <p class="page-subtitle">按人员、项目和周期维护 A/B/C 绩效记录并保留修改历史。</p>
+                    </div>
+                    <button class="btn btn-primary btn-icon" type="button" data-action="new-performance"
+                            data-permission="performance:write">
+                        <i class="bi bi-plus-lg"></i><span>新增绩效</span>
+                    </button>
+                </div>
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="toolbar">
+                            <div class="filter-grid">
+                                <div id="performanceAllFilters" class="performance-user-filter">
+                                    <label for="performanceUserName" class="form-label">人员姓名</label>
+                                    <input id="performanceUserName" type="search" class="form-control"
+                                           placeholder="输入姓名模糊搜索">
+                                    <div id="performanceUserMatches" class="user-option-list"
+                                         aria-live="polite"></div>
+                                    <label for="performanceUserId" class="form-label mt-2">人员 ID</label>
+                                    <input id="performanceUserId" type="number" class="form-control"
+                                           placeholder="全部匹配 ID">
+                                </div>
+                                <div>
+                                    <label for="performanceProjectFilter" class="form-label">项目</label>
+                                    <select id="performanceProjectFilter" class="form-select"></select>
+                                </div>
+                                <div>
+                                    <label for="performancePeriodFilter" class="form-label">周期类型</label>
+                                    <select id="performancePeriodFilter" class="form-select">
+                                        <option value="">全部周期</option>
+                                        <option value="MONTH">月度</option>
+                                        <option value="QUARTER">季度</option>
+                                        <option value="PROJECT">项目</option>
+                                    </select>
+                                </div>
+                                <div class="form-check form-switch align-self-end">
+                                    <input id="performanceCurrentOnly" class="form-check-input" type="checkbox" checked>
+                                    <label for="performanceCurrentOnly" class="form-check-label">当前有效</label>
+                                </div>
+                            </div>
+                            <div class="toolbar-actions">
+                                <span id="performanceCount" class="badge text-bg-light status-badge">共 0 条</span>
+                                <button id="searchPerformances" class="btn btn-primary btn-icon" type="button">
+                                    <i class="bi bi-search"></i><span>查询</span>
+                                </button>
+                                <button id="reloadPerformances" class="btn btn-outline-secondary btn-icon" type="button">
+                                    <i class="bi bi-arrow-clockwise"></i><span>刷新</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>人员</th>
+                                <th>项目</th>
+                                <th>周期类型</th>
+                                <th>周期值</th>
+                                <th>等级</th>
+                                <th>状态</th>
+                                <th>评价说明</th>
+                                <th class="text-end">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="performanceRows"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="performanceModal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form id="performanceForm" class="modal-content">
+            <div class="modal-header">
+                <h2 id="performanceModalTitle" class="modal-title h5">新增绩效记录</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="evaluatedUserName" class="form-label">被评价人姓名</label>
+                        <input id="evaluatedUserName" type="search" class="form-control"
+                               placeholder="输入姓名模糊搜索">
+                        <div id="evaluatedUserMatches" class="user-option-list" aria-live="polite"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="evaluatedUserIdInput" class="form-label">被评价用户 ID</label>
+                        <input id="evaluatedUserIdInput" type="number" class="form-control"
+                               placeholder="例如 3" required>
+                        <input id="evaluatedUserId" name="evaluatedUserId" type="hidden">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="performanceProjectId" class="form-label">项目</label>
+                        <select id="performanceProjectId" name="projectId" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="periodType" class="form-label">周期类型</label>
+                        <select id="periodType" name="periodType" class="form-select" required>
+                            <option value="MONTH">月度</option>
+                            <option value="QUARTER">季度</option>
+                            <option value="PROJECT">项目</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="periodValue" class="form-label">周期值</label>
+                        <select id="periodValue" name="periodValue" class="form-select" required></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="performanceGrade" class="form-label">等级</label>
+                        <select id="performanceGrade" name="grade" class="form-select" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label for="performanceComment" class="form-label">评价说明</label>
+                        <textarea id="performanceComment" name="comment" class="form-control" rows="3"
+                                  maxlength="1000"></textarea>
+                    </div>
+                    <div id="modificationReasonGroup" class="col-12 d-none">
+                        <label for="modificationReason" class="form-label">修改原因</label>
+                        <textarea id="modificationReason" name="modificationReason" class="form-control" rows="3"
+                                  maxlength="1000"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-icon" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i><span>取消</span>
+                </button>
+                <button type="submit" class="btn btn-primary btn-icon">
+                    <i class="bi bi-check2"></i><span>保存</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="mobileNav" class="offcanvas offcanvas-start" tabindex="-1">
+    <div class="offcanvas-header">
+        <div class="d-flex align-items-center gap-2">
+            <span class="brand-mark"><i class="bi bi-hexagon-fill"></i></span>
+            <h2 class="h5 offcanvas-title mb-0">外包管理</h2>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="关闭"></button>
+    </div>
+    <div class="offcanvas-body p-0 d-flex flex-column">
+        <div class="sidebar-primary-action" data-permission="performance:write">
+            <button class="btn btn-primary btn-icon w-100" data-action="new-performance" type="button">
+                <i class="bi bi-plus-lg"></i><span>新增绩效</span>
+            </button>
+        </div>
+        <nav class="app-nav-group">
+            <a class="app-nav-link" href="/ui/dashboard"><i class="bi bi-grid-1x2"></i><span>工作台</span></a>
+            <a class="app-nav-link" href="/ui/applications" data-permission="application:read:self">
+                <i class="bi bi-file-earmark-text"></i><span>上岗申请</span>
+            </a>
+            <a class="app-nav-link" href="/ui/approvals" data-permission="approval:read">
+                <i class="bi bi-ui-checks"></i><span>领导审批</span>
+            </a>
+            <a class="app-nav-link" href="/ui/work-logs"
+               data-permission-any="worklog:read:self,worklog:read:all">
+                <i class="bi bi-journal-text"></i><span>工作日志</span>
+            </a>
+            <a class="app-nav-link active" href="/ui/performances"
+               data-permission-any="performance:read:self,performance:read">
+                <i class="bi bi-award"></i><span>绩效管理</span>
+            </a>
+            <a class="app-nav-link" href="/ui/users" data-permission="user:read">
+                <i class="bi bi-people"></i><span>用户管理</span>
+            </a>
+            <a class="app-nav-link" href="/ui/notifications" data-permission="notification:read">
+                <i class="bi bi-bell"></i><span>通知消息</span>
+            </a>
+            <a class="app-nav-link" href="/ui/operation-logs" data-permission="operation:read">
+                <i class="bi bi-clock-history"></i><span>操作日志</span>
+            </a>
+        </nav>
+        <div class="app-sidebar-footer">
+            <a class="app-nav-link" href="/doc.html"><i class="bi bi-braces"></i><span>接口文档</span></a>
+        </div>
+    </div>
+</div>
+<script src="/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
