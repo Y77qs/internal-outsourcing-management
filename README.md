@@ -4,7 +4,7 @@
 
 This is a backend management system for internal outsourced testing personnel.
 
-系统围绕测试外包人员的入场、审批、工作日志、绩效、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、Elasticsearch 日志检索、Prometheus/Grafana 监控和接口文档能力。后端工程位于仓库根目录，设计资料和实现文档统一归档在 `docs/`。
+系统围绕测试外包人员的入场、审批、工作日志、绩效、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、MySQL 权威审计查询、Elasticsearch best-effort 索引同步、Prometheus/Grafana 监控和接口文档能力。后端工程位于仓库根目录，设计资料和实现文档统一归档在 `docs/`。
 
 ## 功能模块 / Features
 
@@ -18,7 +18,7 @@ This is a backend management system for internal outsourced testing personnel.
 | 工作日志 | 外包人员提交/修改个人日志，领导和管理员按人员、项目、日期查询 |
 | 绩效管理 | A/B/C 绩效评定、月度/季度/项目周期、修改原因和历史版本 |
 | 通知消息 | 申请提交、撤回、审批结果通过 RabbitMQ 异步通知并落库 |
-| 操作审计 | `@OperationLog` + AOP 自动记录关键操作，敏感字段脱敏，关键词检索优先走 Elasticsearch 并以 MySQL 为权威存储 |
+| 操作审计 | `@OperationLog` + AOP 自动记录关键操作，敏感字段脱敏，关键词检索以 MySQL 权威日志为准，写入后 best-effort 同步 Elasticsearch |
 | 监控部署 | Actuator、Prometheus、Grafana、Dockerfile、Docker Compose、CI/CD 模拟 |
 | 接口文档 | Swagger UI / Knife4j 输出接口说明 |
 
@@ -32,9 +32,17 @@ This is a backend management system for internal outsourced testing personnel.
 | --- | --- |
 | ![上岗申请](docs/screenshots/applications.png) | ![领导审批](docs/screenshots/approvals.png) |
 
-| 用户管理 |
+| 工作日志 | 绩效管理 |
+| --- | --- |
+| ![工作日志](docs/screenshots/work-logs.png) | ![绩效管理](docs/screenshots/performances.png) |
+
+| 用户管理 | 通知消息 |
+| --- | --- |
+| ![用户管理](docs/screenshots/users.png) | ![通知消息](docs/screenshots/notifications.png) |
+
+| 操作日志 |
 | --- |
-| ![用户管理](docs/screenshots/users.png) |
+| ![操作日志](docs/screenshots/operation-logs.png) |
 
 ## 技术栈 / Tech Stack
 
@@ -119,7 +127,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 - `./mvnw checkstyle:check`: 0 个 Checkstyle violations。
 - `./mvnw verify`: 通过 JaCoCo Week3 核心服务 80% 覆盖率门控。
 - `docker compose config -q`: Compose 配置语法通过。
-- 前端截图基于本地真实 Spring Boot 页面生成，覆盖登录、工作台、上岗申请、领导审批和用户管理。
+- 前端截图基于本地真实 Spring Boot 页面生成，覆盖登录、工作台、上岗申请、领导审批、工作日志、绩效管理、用户管理、通知消息和操作日志。
 
 ## 目录结构 / Structure
 
@@ -130,7 +138,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 ├── docs/
 │   ├── design/              # PRD、需求文档、架构图、ER 图、UML 图、draw.io 源文件
 │   ├── implementation/      # API、数据库、部署监控、测试记录、问题清单、压测模板
-│   └── screenshots/         # 登录、工作台、上岗申请、领导审批、用户管理截图
+│   └── screenshots/         # 登录、工作台、上岗申请、领导审批、工作日志、绩效、通知和操作日志截图
 ├── ops/                     # Prometheus 和 Grafana 配置
 ├── scripts/                 # JMeter 自动化脚本
 ├── docker-compose.yml       # MySQL、Redis、RabbitMQ、ES、监控和应用容器

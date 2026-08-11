@@ -99,6 +99,18 @@ curl -I http://localhost:8080/ui/performances
 - `/ui/work-logs` 返回 HTTP 200。
 - `/ui/performances` 返回 HTTP 200。
 
+当前截图验收已于 2026-08-11 基于 Docker Compose 端口 `8080` 的真实页面重新生成，截图文件位于 `docs/screenshots/`：
+
+- `login.png`
+- `dashboard.png`
+- `applications.png`
+- `approvals.png`
+- `users.png`
+- `work-logs.png`
+- `performances.png`
+- `operation-logs.png`
+- `notifications.png`
+
 当前 Docker Compose 端口 `8080` JMeter 实测通过：
 
 | Plan | Samples | Errors | Error rate | Avg ms | P95 ms | Max ms | Throughput/s |
