@@ -1,5 +1,7 @@
 # Week3 后端优化说明
 
+> 状态更新：本文保留 Week3 后端优化口径。Week4 已升级为全项目生产代码 80% 行覆盖率门控，最新最终验收结果见 `week4-final-delivery-report.md`。
+
 ## 修复范围
 
 本轮按 P1/P2 优先级修复 Week3 后端问题，重点覆盖操作日志安全、操作日志写入权威性、绩效业务边界、分页保护、绩效当前记录唯一性、Docker/CI/JMeter 工程化材料。
@@ -60,7 +62,7 @@
 - `.dockerignore` 不再放行 `target/*.jar`。
 - `docker-compose.yml` 解除 app 对 Elasticsearch healthy 的硬依赖，保留 ES/Prometheus/Grafana 增强服务。
 - CI workflow 位于仓库根 `.github/workflows/week3-ci.yml`，远端发布版直接在仓库根目录执行。
-- JaCoCo 注释和测试文档明确当前 80% 门控是 Week3 增量核心类口径，不冒充全项目覆盖率。
+- JaCoCo 在 Week3 阶段按核心类口径解释；Week4 已升级为全项目生产代码 80% 行覆盖率门控。
 - 新增 `jmeter-week3-core-business.jmx`，覆盖登录后工作日志、绩效、操作日志查询链路。
 - 新增 `jmeter-week3-write-chain.jmx`，用唯一外包人员变量覆盖注册/登录、提交申请、审批、工作日志、绩效新增/修改和操作日志查询。
 - 新增 `scripts/run-week3-jmeter.sh` 和 `jmeter-week3-run-report.md`，在本机 Docker Compose 环境完成三组 JMeter 实测闭环。
@@ -80,8 +82,8 @@
 ## 保留问题与理由
 
 - Elasticsearch 查询增强不补代码：当前接口以 MySQL 权威日志查询，ES 仅做 best-effort 索引同步和后续检索增强预留。直接补 ES 查询会引入索引缺口漏审计的风险；若后续强制使用 ES，应采用“ES 候选 + MySQL 兜底补全”的 hybrid search，而不是让 ES 成为唯一结果源。
-- JaCoCo 覆盖率口径不扩展为全项目 80%：当前门控聚焦 Week3 增量核心类，不把 entity/dto/vo/config/启动类纳入核心逻辑覆盖率，也不冒充全项目覆盖率。
-- JMeter 原始 `.jtl` 与 HTML dashboard 位于 `target/jmeter-results/`，作为构建产物不提交；仓库提交脚本和 `docs/jmeter-week3-run-report.md` 指标摘要。
+- JaCoCo 覆盖率口径在 Week3 未扩展为全项目 80%；Week4 已补测试并通过全项目生产代码 80% 行覆盖率门控。
+- JMeter 原始 `.jtl` 与 HTML dashboard 位于 `target/jmeter-results/`，作为构建产物不提交；仓库提交脚本和 `docs/implementation/jmeter-week3-run-report.md` 指标摘要。
 
 ## 验证结果
 
@@ -94,7 +96,7 @@
 - `docker compose up -d --build`
 - `docker compose ps`
 - `node --check src/main/resources/static/js/app.js`
-- `xmllint --noout docs/jmeter-login-concurrency.jmx docs/jmeter-week3-core-business.jmx docs/jmeter-week3-write-chain.jmx`
+- `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx`
 - `JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.3.tgz scripts/run-week3-jmeter.sh`
 - 调试标记扫描覆盖 `src` 和 `docs`，无业务代码残留
 

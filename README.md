@@ -4,7 +4,7 @@
 
 This is a backend management system for internal outsourced testing personnel.
 
-系统围绕测试外包人员的入场、审批、工作日志、绩效、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、MySQL 权威审计查询、Elasticsearch best-effort 索引同步、Prometheus/Grafana 监控和接口文档能力。后端工程位于仓库根目录，设计资料和实现文档统一归档在 `docs/`。
+系统围绕测试外包人员的入场、审批、工作日志、绩效、通知和审计流程展开，提供账号认证、RBAC 权限、用户管理、上岗申请、领导审批、RabbitMQ 通知、MySQL 权威审计存储、Elasticsearch 候选检索增强、Prometheus/Grafana 监控和接口文档能力。后端工程位于仓库根目录，设计资料和实现文档统一归档在 `docs/`。
 
 ## 功能模块 / Features
 
@@ -18,7 +18,7 @@ This is a backend management system for internal outsourced testing personnel.
 | 工作日志 | 外包人员提交/修改个人日志，领导和管理员按人员、项目、日期查询 |
 | 绩效管理 | A/B/C 绩效评定、月度/季度/项目周期、修改原因和历史版本 |
 | 通知消息 | 申请提交、撤回、审批结果通过 RabbitMQ 异步通知并落库 |
-| 操作审计 | `@OperationLog` + AOP 自动记录关键操作，敏感字段脱敏，关键词检索以 MySQL 权威日志为准，写入后 best-effort 同步 Elasticsearch |
+| 操作审计 | `@OperationLog` + AOP 自动记录关键操作，敏感字段脱敏；关键词检索优先用 Elasticsearch 获取候选 ID，再由 MySQL 做外层过滤、兜底匹配、排序和分页 |
 | 监控部署 | Actuator、Prometheus、Grafana、Dockerfile、Docker Compose、CI/CD 模拟 |
 | 接口文档 | Swagger UI / Knife4j 输出接口说明 |
 
@@ -50,7 +50,7 @@ This is a backend management system for internal outsourced testing personnel.
 - Persistence: MyBatis-Plus, MySQL 8.x
 - Cache and session: Redis
 - Messaging: RabbitMQ
-- Search: MySQL authoritative audit query, Elasticsearch 8.x best-effort indexing
+- Search: Elasticsearch 8.x audit candidate search, MySQL authoritative audit fallback and pagination
 - Monitoring: Spring Boot Actuator, Micrometer, Prometheus, Grafana
 - Security: Spring Security, JWT, BCrypt, RBAC
 - Frontend: Thymeleaf, Bootstrap 5, Bootstrap Icons
@@ -116,6 +116,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 | [接口说明](docs/implementation/api.md) | REST API、权限、请求示例和页面入口 |
 | [数据库设计](docs/implementation/database.md) | 表结构、关系、索引和初始化数据 |
 | [部署与监控说明](docs/implementation/deployment-monitoring.md) | Docker、Elasticsearch、Prometheus/Grafana、JMeter 和 CI/CD |
+| [Week4 最终交付报告](docs/implementation/week4-final-delivery-report.md) | 全项目覆盖率、本地部署、接口 smoke test、JMeter 压测和复盘总结 |
 | [测试记录](docs/implementation/test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
 | [问题清单](docs/implementation/problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
 
@@ -123,10 +124,13 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 
 已验证内容：
 
-- `./mvnw clean test`: 47 个测试通过，覆盖 JWT、注册登录、用户管理、RBAC、审批、基础资料、通知消息、工作日志、绩效和操作日志检索降级。
+- `./mvnw clean verify`: 88 个测试通过，JaCoCo 全项目生产代码行覆盖率 89.46%，超过 Week4 80% 门控。
 - `./mvnw checkstyle:check`: 0 个 Checkstyle violations。
-- `./mvnw verify`: 通过 JaCoCo Week3 核心服务 80% 覆盖率门控。
+- `node --check src/main/resources/static/js/app.js`: 前端脚本语法通过。
+- `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx`: JMeter 模板 XML 结构通过。
 - `docker compose config -q`: Compose 配置语法通过。
+- `docker compose up -d --build`: 应用镜像重建并启动到 healthy，`/api/health`、`/actuator/health/readiness`、`/doc.html`、核心 UI 页面和 `/actuator/prometheus` smoke test 通过。
+- `scripts/run-week3-jmeter.sh`: 登录并发、核心读链路、写入链路三组压测均 0 errors，最新结果见 Week4 最终交付报告。
 - 前端截图基于本地真实 Spring Boot 页面生成，覆盖登录、工作台、上岗申请、领导审批、工作日志、绩效管理、用户管理、通知消息和操作日志。
 
 ## 目录结构 / Structure

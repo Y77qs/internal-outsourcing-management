@@ -42,7 +42,7 @@
 
 ## 日志检索存储
 
-`operation_log` 仍是审计日志的权威数据源。服务写入 MySQL 成功后会 best-effort 同步到 Elasticsearch 索引 `pta-operation-logs`，用于后续检索增强预留；当前查询接口始终以 MySQL 权威日志执行条件查询和关键词多字段模糊查询，避免 Elasticsearch 索引缺口造成审计漏查。
+`operation_log` 仍是审计日志的权威数据源。服务写入 MySQL 成功后会 best-effort 同步到 Elasticsearch 索引 `pta-operation-logs`；关键词查询优先使用 Elasticsearch 获取候选日志 ID，再回到 MySQL 按操作人、模块、时间范围、多字段 LIKE 兜底、`created_at desc, id desc` 排序和分页返回。Elasticsearch 不可用、命中为空或历史日志未索引时，MySQL LIKE 兜底仍会参与最终条件，避免审计漏查。
 
 ## 待优化候选
 

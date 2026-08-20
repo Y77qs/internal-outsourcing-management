@@ -10,7 +10,7 @@
 | `mysql` | `3306` | 业务数据、审计日志权威存储 |
 | `redis` | `6379` | 登录态缓存、绩效并发修改锁 |
 | `rabbitmq` | `5672` / `15672` | 审批通知 MQ 和管理后台 |
-| `elasticsearch` | `9200` | 操作日志 best-effort 索引同步 |
+| `elasticsearch` | `9200` | 操作日志候选检索增强和 best-effort 索引同步 |
 | `prometheus` | `9090` | 采集 `/actuator/prometheus` 指标 |
 | `grafana` | `3001`（可用 `GRAFANA_PORT` 覆盖） | 可视化看板，默认账号 `admin/admin` |
 
@@ -33,11 +33,13 @@ http://localhost:15672
 
 ## Elasticsearch 日志索引
 
-操作日志仍先写入 MySQL `operation_log`，写库成功后 best-effort 同步到 Elasticsearch 索引 `pta-operation-logs`。如果 Elasticsearch 未启动、网络异常或索引写入失败：
+操作日志仍先写入 MySQL `operation_log`，写库成功后 best-effort 同步到 Elasticsearch 索引 `pta-operation-logs`。`/api/operation-logs?keyword=...` 会优先用 Elasticsearch 获取候选日志 ID，再回到 MySQL 做操作人、模块、时间范围过滤、多字段 LIKE 兜底、`created_at desc, id desc` 排序和分页。
+
+如果 Elasticsearch 未启动、网络异常、索引写入失败或查询命中为空：
 
 - 业务操作不失败。
 - MySQL 审计日志仍然保留。
-- `/api/operation-logs?keyword=...` 始终以 MySQL 权威日志执行多字段模糊查询，避免 ES 索引缺口造成审计漏查。
+- `/api/operation-logs?keyword=...` 仍会合并 MySQL 多字段 LIKE 兜底，避免 ES 索引缺口造成审计漏查。
 
 相关配置：
 
@@ -84,9 +86,9 @@ Compose 中应用容器使用 `300/30/200`，用于模拟企业内部较高并�
 压测模板：
 
 ```text
-docs/jmeter-login-concurrency.jmx
-docs/jmeter-week3-core-business.jmx
-docs/jmeter-week3-write-chain.jmx
+docs/implementation/jmeter-login-concurrency.jmx
+docs/implementation/jmeter-week3-core-business.jmx
+docs/implementation/jmeter-week3-write-chain.jmx
 ```
 
 命令行示例：
@@ -97,7 +99,7 @@ scripts/run-week3-jmeter.sh
 
 登录模板覆盖多人并发登录 `POST /api/auth/login`；核心读链路模板在 setup 阶段管理员登录一次，再并发查询工作日志、绩效和操作日志，避免同账号重复登录导致旧 token 失效；写入链路模板使用唯一外包人员变量覆盖注册/登录、提交上岗申请、审批、提交工作日志、新增和修改绩效、查询操作日志。三个模板都断言业务响应码包含 `00000`。
 
-2026-08-10 19:46 CST 在本机 Docker Compose `8080` 端口完成实测，结果位于 `target/jmeter-results/`，摘要见 `docs/jmeter-week3-run-report.md`：
+2026-08-10 19:46 CST 在本机 Docker Compose `8080` 端口完成实测，结果位于 `target/jmeter-results/`，摘要见 `docs/implementation/jmeter-week3-run-report.md`：
 
 | Plan | Samples | Errors | Error rate | Avg ms | P95 ms | Max ms | Throughput/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |

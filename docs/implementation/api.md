@@ -26,7 +26,7 @@
 | `/ui/performances` | 绩效管理页，维护 A/B/C 绩效等级并查看当前记录 |
 | `/ui/users` | 用户管理页，管理员可通过 Modal 创建内部账号并分配角色 |
 | `/ui/notifications` | 通知页 |
-| `/ui/operation-logs` | 操作日志页，基于 MySQL 权威日志支持关键词检索 |
+| `/ui/operation-logs` | 操作日志页，基于 ES 候选增强和 MySQL 权威日志支持关键词检索 |
 
 ## 认证
 
@@ -198,7 +198,7 @@
 | --- | --- |
 | `operatorId` | 操作人 ID，可选 |
 | `moduleName` | 模块名称，支持模糊匹配 |
-| `keyword` | 关键词，按 MySQL 权威日志执行多字段模糊查询；Elasticsearch 仅保留 best-effort 索引同步，不作为查询权威来源 |
+| `keyword` | 关键词；接口优先向 Elasticsearch 查询候选日志 ID，再回到 MySQL 按操作人、模块、时间范围和多字段 LIKE 兜底做权威过滤、排序和分页 |
 | `startTime` | 开始时间，格式如 `2026-08-03T10:00:00` |
 | `endTime` | 结束时间，格式如 `2026-08-03T18:00:00` |
 | `pageNo` / `pageSize` | 分页参数 |

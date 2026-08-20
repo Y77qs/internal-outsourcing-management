@@ -9,17 +9,22 @@
 ./mvnw -q clean test
 ./mvnw -q checkstyle:check
 ./mvnw -q verify
+./mvnw -q clean verify
 node --check src/main/resources/static/js/app.js
-xmllint --noout docs/jmeter-login-concurrency.jmx docs/jmeter-week3-core-business.jmx docs/jmeter-week3-write-chain.jmx
+xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx
 JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.3.tgz scripts/run-week3-jmeter.sh
 docker compose config --quiet
+git diff --check
 docker compose build app
 docker compose up -d --build
 docker compose ps
+curl -fsS http://localhost:8080/api/health
 curl -fsS http://localhost:8080/actuator/health/readiness
 curl -I http://localhost:8080/doc.html
+curl -I http://localhost:8080/ui/login
 curl -I http://localhost:8080/ui/work-logs
 curl -I http://localhost:8080/ui/performances
+curl -fsS http://localhost:8080/actuator/prometheus >/dev/null
 ./mvnw -q spring-boot:run -Dspring-boot.run.arguments=--server.port=18080
 ```
 
@@ -55,13 +60,17 @@ curl -I http://localhost:8080/ui/performances
 | 单元测试 | 绩效人员 ID 精确搜索返回对应人员 |
 | 单元测试 | 绩效列表支持多个被评价人员 ID 一次查询 |
 | 单元测试 | 操作日志密码和 Token 脱敏 |
-| 单元测试 | 操作日志关键词检索始终以 MySQL 权威日志为准 |
+| 单元测试 | 操作日志关键词检索采用 ES 候选 ID + MySQL LIKE 兜底，最终外层过滤、排序和分页仍由 MySQL 执行 |
 | 单元测试 | 操作日志 MySQL 权威写入失败会暴露异常且跳过 ES 索引 |
 | 单元测试 | 操作日志 ES 索引失败不影响已写入的 MySQL 审计日志 |
+| 单元测试 | ES 操作日志 `_search` 请求构造、limit 上限截断、`_source.id` / `_id` 解析、去重和非法 ID 跳过 |
 | 单元测试 | 业务异常与失败审计写入异常同时发生时，AOP 保留原业务异常并附加审计异常 |
 | 单元测试 | 绩效人员搜索接口带有 `@OperationLog` 审计注解 |
+| 单元测试 | 上岗申请提交、重复待审批、缺少部门或项目、详情权限和撤回状态边界 |
+| 单元测试 | Controller 薄封装委托、统一 `ResultVO` 响应和 UI 模板入口 |
+| 单元测试 | JWT 过滤器、Redis 登录态、Redis 锁、异常处理、配置 Bean 和 ES 索引文档 |
 | 规范检查 | Checkstyle 基础命名、未使用导入、必需大括号 |
-| 覆盖率门控 | JaCoCo `verify` 对 Week3 增量核心类覆盖率执行 80% 门槛，不代表全项目覆盖率 |
+| 覆盖率门控 | JaCoCo `clean verify` 对全项目生产代码执行 80% 行覆盖率门槛，Lombok 生成代码通过 `lombok.config` 排除 |
 | 前端静态检查 | `node --check` 验证 `app.js` 语法 |
 | JMeter 材料校验 | 登录并发、核心读链路、写入链路三个 `.jmx` 文件通过 XML 结构校验 |
 | JMeter 写入链路材料 | `jmeter-week3-write-chain.jmx` 使用唯一外包人员变量覆盖注册/登录、提交申请、审批、工作日志、绩效新增/修改和操作日志查询 |
@@ -88,7 +97,7 @@ curl -I http://localhost:8080/ui/performances
 - 新建领导账号登录成功，访问 `/api/approvals/pending` 返回 `00000`。
 - 新注册外包人员调用 `POST /api/users` 返回 HTTP 403。
 - `/api/operation-logs` 使用管理员 Token 查询成功。
-- `/api/operation-logs?keyword=登录` 以 MySQL 权威日志执行多字段模糊查询。
+- `/api/operation-logs?keyword=登录` 使用 Elasticsearch 候选 ID + MySQL 多字段 LIKE 兜底；操作人、模块和时间范围过滤始终在外层生效，最终按 `created_at desc, id desc` 返回。
 - 最新登录日志为 AOP 自动记录，参数为 `[{"username":"admin","password":"******"}]`。
 - 最新创建用户日志为 AOP 自动记录，密码字段显示为 `******`。
 
@@ -111,15 +120,29 @@ curl -I http://localhost:8080/ui/performances
 - `operation-logs.png`
 - `notifications.png`
 
+2026-08-14 Week4 最终本地验收通过：
+
+- `./mvnw -q clean verify`：82 tests，0 failures，0 errors，0 skipped。
+- JaCoCo 全项目生产代码覆盖率：line 993/1126，88.19%；instruction 4835/5595，86.42%；branch 227/324，70.06%。
+- `./mvnw -q checkstyle:check`、`node --check src/main/resources/static/js/app.js`、`xmllint --noout docs/implementation/*.jmx`、`docker compose config -q` 均通过。
+- `docker compose up -d --build` 后 `pta-app` healthy，`/api/health`、`/actuator/health/readiness`、`/doc.html`、`/ui/login`、`/ui/work-logs`、`/ui/performances`、`/actuator/prometheus` 均返回成功响应。
+
+2026-08-17 Week4 Elasticsearch 日志检索闭环复测通过：
+
+- `./mvnw -q clean verify`：88 tests，0 failures，0 errors，0 skipped。
+- JaCoCo 全项目生产代码覆盖率：line 1069/1195，89.46%；instruction 5242/5891，88.98%；branch 257/360，71.39%。
+- `./mvnw -q checkstyle:check`、`node --check src/main/resources/static/js/app.js`、`xmllint --noout docs/implementation/*.jmx`、`docker compose config -q`、`git diff --check` 均通过。
+- `docker compose up -d --build` 后 `pta-app` healthy，`/api/health`、`/actuator/health/readiness`、`/doc.html`、`/ui/login`、`/ui/work-logs`、`/ui/performances`、`/actuator/prometheus` 均返回成功响应。
+
 当前 Docker Compose 端口 `8080` JMeter 实测通过：
 
 | Plan | Samples | Errors | Error rate | Avg ms | P95 ms | Max ms | Throughput/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 78.20 | 85 | 571 | 10.18 |
-| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 16.55 | 34 | 148 | 29.75 |
-| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 31.72 | 106 | 126 | 5.37 |
+| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 82.07 | 91 | 641 | 10.16 |
+| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 36.40 | 67 | 1409 | 29.64 |
+| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 37.35 | 110 | 152 | 5.32 |
 
-压测原始文件位于 `target/jmeter-results/`，汇总报告位于 `docs/jmeter-week3-run-report.md`。
+压测原始文件位于 `target/jmeter-results/`，汇总报告位于 `docs/implementation/jmeter-week3-run-report.md`。
 
 ## 企业级前端体验验证
 

@@ -188,15 +188,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
-                <configuration>
-                    <!-- Week3 增量核心类覆盖率门控；全项目覆盖率在文档中单独说明，不混用口径。 -->
-                    <includes>
-                        <include>com/pta/outsourcing/service/impl/OperationLogServiceImpl*</include>
-                        <include>com/pta/outsourcing/service/impl/WorkLogServiceImpl*</include>
-                        <include>com/pta/outsourcing/service/impl/PerformanceServiceImpl*</include>
-                        <include>com/pta/outsourcing/security/JwtTokenProvider*</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>

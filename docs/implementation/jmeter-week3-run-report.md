@@ -3,7 +3,7 @@
 ## 运行命令
 
 ```bash
-cd /Users/baozhashizitou/Documents/pta/week2
+cd /Users/baozhashizitou/Documents/pta
 JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.3.tgz \
   scripts/run-week3-jmeter.sh
 ```
@@ -12,16 +12,16 @@ JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.
 
 ## 本次结果
 
-- 运行时间：2026-08-10 19:46:39 CST
+- 运行时间：2026-08-17 09:21:57 CST
 - Base URL：`http://localhost:8080`
 - Readiness：`http://localhost:8080/actuator/health/readiness`
 - 原始汇总：`target/jmeter-results/week3-jmeter-summary.md`
 
 | Plan | Samples | Errors | Error rate | Avg ms | P95 ms | Max ms | Throughput/s | JTL | HTML report |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 78.20 | 85 | 571 | 10.18 | `target/jmeter-results/jmeter-login-concurrency.jtl` | `target/jmeter-results/jmeter-login-concurrency-html` |
-| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 16.55 | 34 | 148 | 29.75 | `target/jmeter-results/jmeter-week3-core-business.jtl` | `target/jmeter-results/jmeter-week3-core-business-html` |
-| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 31.72 | 106 | 126 | 5.37 | `target/jmeter-results/jmeter-week3-write-chain.jtl` | `target/jmeter-results/jmeter-week3-write-chain-html` |
+| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 82.07 | 91 | 641 | 10.16 | `target/jmeter-results/jmeter-login-concurrency.jtl` | `target/jmeter-results/jmeter-login-concurrency-html` |
+| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 36.40 | 67 | 1409 | 29.64 | `target/jmeter-results/jmeter-week3-core-business.jtl` | `target/jmeter-results/jmeter-week3-core-business-html` |
+| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 37.35 | 110 | 152 | 5.32 | `target/jmeter-results/jmeter-week3-write-chain.jtl` | `target/jmeter-results/jmeter-week3-write-chain-html` |
 
 ## 修复说明
 

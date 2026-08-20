@@ -20,7 +20,7 @@
 ### P2：代码与文档不一致
 
 - `OperationLogController` JavaDoc 改为 MySQL 权威关键词查询。
-- `docs/api.md`、`docs/deployment-monitoring.md`、`docs/README.md`、`docs/problem-list.md`、`docs/test-record.md`、`docs/week3-code-review-brief.md` 统一改为“MySQL 权威日志查询，ES best-effort 索引同步”。
+- `docs/implementation/api.md`、`docs/implementation/deployment-monitoring.md`、`docs/implementation/README.md`、`docs/implementation/problem-list.md`、`docs/implementation/test-record.md`、`docs/implementation/week3-code-review-brief.md` 统一改为“MySQL 权威日志查询，ES best-effort 索引同步”。
 - 保留 handoff 文件中的旧描述作为历史输入资料，不把它改写成结论。
 
 ### P2：绩效人员搜索审计缺口
@@ -71,7 +71,7 @@
 - `./mvnw -q checkstyle:check`
 - `./mvnw -q verify`
 - `node --check src/main/resources/static/js/app.js`
-- `xmllint --noout docs/jmeter-login-concurrency.jmx docs/jmeter-week3-core-business.jmx`
+- `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx`
 - `docker compose config -q`
 - `docker compose build app`：通过，`pta-app:latest` 从当前源码构建完成。
 - `docker compose up -d --build`：通过，`pta-app` 重建启动完成。

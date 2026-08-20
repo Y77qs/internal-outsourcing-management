@@ -8,9 +8,9 @@
 
 | 文件 | 场景 |
 | --- | --- |
-| `docs/jmeter-login-concurrency.jmx` | 20 个线程、10 秒 ramp-up、每线程 5 次登录 |
-| `docs/jmeter-week3-core-business.jmx` | setup 管理员登录后并发查询工作日志、绩效列表、操作日志关键词检索 |
-| `docs/jmeter-week3-write-chain.jmx` | 参数化注册外包人员、登录、提交上岗申请、审批、提交工作日志、新增/修改绩效、查询操作日志 |
+| `docs/implementation/jmeter-login-concurrency.jmx` | 20 个线程、10 秒 ramp-up、每线程 5 次登录 |
+| `docs/implementation/jmeter-week3-core-business.jmx` | setup 管理员登录后并发查询工作日志、绩效列表、操作日志关键词检索 |
+| `docs/implementation/jmeter-week3-write-chain.jmx` | 参数化注册外包人员、登录、提交上岗申请、审批、提交工作日志、新增/修改绩效、查询操作日志 |
 
 默认请求：
 
@@ -46,10 +46,10 @@ JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.
 
 三个模板都通过 `${__P(NAME,default)}` 读取命令行 `-J` 属性，便于验收环境覆盖 host、port、线程数和循环次数；写入链路还可覆盖管理员账号、测试密码、部门和项目 ID。
 
-2026-08-10 19:46 CST 实测结果：
+2026-08-17 09:21 CST Week4 Elasticsearch 日志检索闭环复测结果：
 
 | Plan | Samples | Errors | Error rate | Avg ms | P95 ms | Max ms | Throughput/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 78.20 | 85 | 571 | 10.18 |
-| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 16.55 | 34 | 148 | 29.75 |
-| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 31.72 | 106 | 126 | 5.37 |
+| `jmeter-login-concurrency` | 100 | 0 | 0.00% | 82.07 | 91 | 641 | 10.16 |
+| `jmeter-week3-core-business` | 301 | 0 | 0.00% | 36.40 | 67 | 1409 | 29.64 |
+| `jmeter-week3-write-chain` | 46 | 0 | 0.00% | 37.35 | 110 | 152 | 5.32 |

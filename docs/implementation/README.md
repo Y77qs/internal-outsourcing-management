@@ -14,7 +14,7 @@
 - RabbitMQ 异步通知闭环：消息落库、发送、消费成功更新、失败进入死信队列。
 - 工作日志：外包人员提交/修改个人日志，领导和管理员按人员、项目和日期查询。
 - 绩效管理：领导或管理员维护 A/B/C 绩效，支持月度、季度和项目周期，保留历史版本。
-- 操作日志增强：MySQL 权威存储 + Elasticsearch best-effort 索引，关键词查询以 MySQL 权威日志为准。
+- 操作日志增强：MySQL 权威存储 + Elasticsearch 候选检索；关键词查询优先用 ES 获取候选 ID，再由 MySQL 做外层过滤、兜底匹配、排序和分页。
 - Prometheus/Grafana 监控：Actuator 暴露健康检查、JVM、接口耗时和 Prometheus 指标。
 - Docker/CI 工程化：Dockerfile、扩展 Compose、GitHub Actions 风格流水线、JMeter 登录、核心读链路和写入链路压测模板。
 - Thymeleaf + Bootstrap 5 + Bootstrap Icons 页面，用于人工验收注册登录、申请、审批、工作日志、绩效、通知和审计日志。
@@ -73,6 +73,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 | [接口说明](api.md) | REST API、权限、请求示例和页面入口 |
 | [数据库设计](database.md) | 表结构、关系、索引和初始化数据 |
 | [部署与监控说明](deployment-monitoring.md) | Docker、Elasticsearch、Prometheus/Grafana、JMeter 和 CI/CD |
+| [Week4 最终交付报告](week4-final-delivery-report.md) | 全项目覆盖率、本地部署、接口 smoke test、JMeter 压测和复盘总结 |
 | [测试记录](test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
 | [问题清单](problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
 | [Week3 后端优化报告](week3-backend-optimization-report.md) | 工作日志、绩效、操作审计、监控和压测交付说明 |

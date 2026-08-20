@@ -112,11 +112,11 @@ git diff --stat
 - `ops/prometheus/prometheus.yml`
 - `ops/grafana/`
 - `.github/workflows/week3-ci.yml`
-- `docs/jmeter-login-concurrency.jmx`
-- `docs/jmeter-week3-core-business.jmx`
-- `docs/jmeter-week3-write-chain.jmx`
+- `docs/implementation/jmeter-login-concurrency.jmx`
+- `docs/implementation/jmeter-week3-core-business.jmx`
+- `docs/implementation/jmeter-week3-write-chain.jmx`
 - `scripts/run-week3-jmeter.sh`
-- `docs/jmeter-week3-run-report.md`
+- `docs/implementation/jmeter-week3-run-report.md`
 - `src/test/java/com/pta/outsourcing/service/WorkLogServiceImplTest.java`
 - `src/test/java/com/pta/outsourcing/service/PerformanceServiceImplTest.java`
 - `src/test/java/com/pta/outsourcing/service/OperationLogServiceImplTest.java`
@@ -129,7 +129,7 @@ node --check src/main/resources/static/js/app.js
 ./mvnw -q test
 ./mvnw -q checkstyle:check
 ./mvnw -q verify
-xmllint --noout docs/jmeter-login-concurrency.jmx docs/jmeter-week3-core-business.jmx docs/jmeter-week3-write-chain.jmx
+xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx
 JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.3.tgz scripts/run-week3-jmeter.sh
 docker compose up -d --build
 docker compose ps
@@ -166,7 +166,7 @@ curl -I http://localhost:8080/ui/performances
 - `./mvnw -q test`
 - `./mvnw -q checkstyle:check`
 - `./mvnw -q verify`
-- `xmllint --noout docs/jmeter-login-concurrency.jmx docs/jmeter-week3-core-business.jmx docs/jmeter-week3-write-chain.jmx`
+- `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx`
 - `JMETER_URL=https://mirrors.ustc.edu.cn/apache/jmeter/binaries/apache-jmeter-5.6.3.tgz scripts/run-week3-jmeter.sh`
 - `docker compose config -q`
 - `docker compose build app`

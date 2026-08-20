@@ -224,11 +224,11 @@ main() {
 
   mkdir -p "${OUT_DIR}"
 
-  run_plan "jmeter-login-concurrency" "${ROOT_DIR}/docs/jmeter-login-concurrency.jmx" \
+  run_plan "jmeter-login-concurrency" "${ROOT_DIR}/docs/implementation/jmeter-login-concurrency.jmx" \
     "${LOGIN_THREADS}" "${LOGIN_LOOPS}"
-  run_plan "jmeter-week3-core-business" "${ROOT_DIR}/docs/jmeter-week3-core-business.jmx" \
+  run_plan "jmeter-week3-core-business" "${ROOT_DIR}/docs/implementation/jmeter-week3-core-business.jmx" \
     "${CORE_THREADS}" "${CORE_LOOPS}"
-  run_plan "jmeter-week3-write-chain" "${ROOT_DIR}/docs/jmeter-week3-write-chain.jmx" \
+  run_plan "jmeter-week3-write-chain" "${ROOT_DIR}/docs/implementation/jmeter-week3-write-chain.jmx" \
     "${WRITE_THREADS}" "${WRITE_LOOPS}"
 
   local summary_path="${OUT_DIR}/week3-jmeter-summary.md"

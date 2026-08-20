@@ -30,7 +30,7 @@ public class OperationLogController {
      *
      * @param operatorId 操作人 ID，可为空。
      * @param moduleName 模块名称，可为空，支持模糊匹配。
-     * @param keyword 关键词，可为空，按 MySQL 权威日志执行多字段模糊查询。
+     * @param keyword 关键词，可为空，使用 ES 候选增强并由 MySQL 权威返回。
      * @param startTime 操作开始时间，可为空。
      * @param endTime 操作结束时间，可为空。
      * @param pageNo 当前页码，从 1 开始。
@@ -46,7 +46,7 @@ public class OperationLogController {
             @RequestParam(required = false) Long operatorId,
             @Parameter(description = "模块名称，支持模糊匹配", example = "认证")
             @RequestParam(required = false) String moduleName,
-            @Parameter(description = "全文关键词，匹配操作人、模块、类型、路径、参数和错误信息", example = "登录")
+            @Parameter(description = "全文关键词，ES 候选增强 + MySQL 权威兜底", example = "登录")
             @RequestParam(required = false) String keyword,
             @Parameter(description = "开始时间，格式：yyyy-MM-dd'T'HH:mm:ss", example = "2026-08-03T09:00:00")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
