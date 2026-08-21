@@ -73,7 +73,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 | [接口说明](api.md) | REST API、权限、请求示例和页面入口 |
 | [数据库设计](database.md) | 表结构、关系、索引和初始化数据 |
 | [部署与监控说明](deployment-monitoring.md) | Docker、Elasticsearch、Prometheus/Grafana、JMeter 和 CI/CD |
-| [Week4 最终交付报告](week4-final-delivery-report.md) | 全项目覆盖率、本地部署、接口 smoke test、JMeter 压测和复盘总结 |
+| [项目最终交付报告](week4-final-delivery-report.md) | 项目范围、模块拆分、功能交付、测试压测、部署监控和复盘总结 |
 | [测试记录](test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
 | [问题清单](problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
 | [Week3 后端优化报告](week3-backend-optimization-report.md) | 工作日志、绩效、操作审计、监控和压测交付说明 |

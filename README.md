@@ -116,7 +116,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 | [接口说明](docs/implementation/api.md) | REST API、权限、请求示例和页面入口 |
 | [数据库设计](docs/implementation/database.md) | 表结构、关系、索引和初始化数据 |
 | [部署与监控说明](docs/implementation/deployment-monitoring.md) | Docker、Elasticsearch、Prometheus/Grafana、JMeter 和 CI/CD |
-| [Week4 最终交付报告](docs/implementation/week4-final-delivery-report.md) | 全项目覆盖率、本地部署、接口 smoke test、JMeter 压测和复盘总结 |
+| [项目最终交付报告](docs/implementation/week4-final-delivery-report.md) | 项目范围、模块拆分、功能交付、测试压测、部署监控和复盘总结 |
 | [测试记录](docs/implementation/test-record.md) | 单元测试、页面验证、接口 smoke test 和人工联调记录 |
 | [问题清单](docs/implementation/problem-list.md) | 项目推进过程中的问题、处理方式和结论 |
 
@@ -130,7 +130,7 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 - `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx`: JMeter 模板 XML 结构通过。
 - `docker compose config -q`: Compose 配置语法通过。
 - `docker compose up -d --build`: 应用镜像重建并启动到 healthy，`/api/health`、`/actuator/health/readiness`、`/doc.html`、核心 UI 页面和 `/actuator/prometheus` smoke test 通过。
-- `scripts/run-week3-jmeter.sh`: 登录并发、核心读链路、写入链路三组压测均 0 errors，最新结果见 Week4 最终交付报告。
+- `scripts/run-week3-jmeter.sh`: 登录并发、核心读链路、写入链路三组压测均 0 errors，最新结果见项目最终交付报告。
 - 前端截图基于本地真实 Spring Boot 页面生成，覆盖登录、工作台、上岗申请、领导审批、工作日志、绩效管理、用户管理、通知消息和操作日志。
 
 ## 目录结构 / Structure
