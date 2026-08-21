@@ -52,6 +52,7 @@ public class OperationLogServiceImpl implements OperationLogService {
         logEntity.setResult(result.name());
         logEntity.setErrorMessage(operationLogSanitizer.sanitize(errorMessage));
         try {
+            // MySQL 是审计日志的权威存储，写入失败必须暴露，避免出现不可追溯的操作。
             operationLogMapper.insert(logEntity);
         } catch (Exception exception) {
             log.error("Failed to write authoritative operation log to MySQL, module={}, type={}",
@@ -59,6 +60,7 @@ public class OperationLogServiceImpl implements OperationLogService {
             throw new IllegalStateException("权威操作日志写入失败", exception);
         }
         try {
+            // Elasticsearch 只作为检索增强，索引失败不影响主业务和 MySQL 审计链路。
             operationLogSearchService.index(logEntity);
         } catch (Exception exception) {
             log.warn("Skip Elasticsearch operation log indexing, id={}", logEntity.getId(), exception);
@@ -77,6 +79,7 @@ public class OperationLogServiceImpl implements OperationLogService {
     ) {
         PageQuery pageQuery = PageQuery.of(pageNo, pageSize);
         if (StringUtils.isNotBlank(keyword)) {
+            // 关键词先走 ES 拿候选 ID，再交给 MySQL 结合权限、模块和时间条件做权威过滤。
             List<Long> candidateIds = searchCandidateIds(keyword, pageQuery);
             return pageLogsFromMysql(operatorId, moduleName, keyword, candidateIds, startTime, endTime, pageQuery);
         }
@@ -93,6 +96,7 @@ public class OperationLogServiceImpl implements OperationLogService {
     }
 
     private int searchCandidateLimit(PageQuery pageQuery) {
+        // 候选 ID 多取一段缓冲，避免 MySQL 二次过滤后当前页数据不足。
         long maxPageNo = (Long.MAX_VALUE - SEARCH_CANDIDATE_LOOKAHEAD) / pageQuery.pageSize();
         if (pageQuery.pageNo() > maxPageNo) {
             return Integer.MAX_VALUE;
@@ -121,6 +125,7 @@ public class OperationLogServiceImpl implements OperationLogService {
                     query.in(OperationLog::getId, candidateIds)
                             .or();
                 }
+                // ES 不可用或未命中时仍保留 MySQL 模糊查询，保证审计检索不漏记录。
                 appendKeywordLike(query, keyword);
             });
         }

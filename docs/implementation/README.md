@@ -2,7 +2,7 @@
 
 ## 交付范围
 
-系统交付以验收项为准，技术栈遵循 [PRD](../design/PRD.md)：
+系统交付以验收项为准，技术栈遵循 [PRD](../../week1/PRD.md)：
 
 - Spring Boot 3.x 基础工程。
 - MyBatis-Plus + MySQL 8.x。
@@ -18,7 +18,7 @@
 - Prometheus/Grafana 监控：Actuator 暴露健康检查、JVM、接口耗时和 Prometheus 指标。
 - Docker/CI 工程化：Dockerfile、扩展 Compose、GitHub Actions 风格流水线、JMeter 登录、核心读链路和写入链路压测模板。
 - Thymeleaf + Bootstrap 5 + Bootstrap Icons 页面，用于人工验收注册登录、申请、审批、工作日志、绩效、通知和审计日志。
-- Swagger/OpenAPI + Knife4j、JUnit/Mockito、Checkstyle、SLF4J 日志。
+- Swagger/OpenAPI + Knife4j、JUnit/Mockito、Checkstyle、SLF4J + Log4j2 日志。
 - `@OperationLog` + AOP 自动采集关键操作成功/失败日志，并对密码、Token 脱敏。
 
 ## 启动步骤

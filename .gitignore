@@ -13,3 +13,4 @@ jmeter.log
 *.jtl
 jmeter-results/
 week3-jmeter-results/
+logs/

@@ -55,7 +55,7 @@ This is a backend management system for internal outsourced testing personnel.
 - Security: Spring Security, JWT, BCrypt, RBAC
 - Frontend: Thymeleaf, Bootstrap 5, Bootstrap Icons
 - API docs: Swagger UI, Knife4j, OpenAPI
-- Quality: JUnit, Mockito, Checkstyle, JaCoCo, SLF4J
+- Quality: JUnit, Mockito, Checkstyle, JaCoCo, SLF4J + Log4j2
 
 ## 快速启动 / Quick Start
 
@@ -105,12 +105,12 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 
 | 文档 | 说明 |
 | --- | --- |
-| [设计资料索引](docs/design/README.md) | 需求、PRD、ER 图、UML 图和系统架构图 |
-| [PRD](docs/design/PRD.md) | 项目背景、用户故事、验收标准、范围边界和风险 |
-| [需求文档](docs/design/%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md) | 业务流程和功能需求拆分 |
-| [系统架构图](docs/design/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png) | 分层架构、认证授权、服务、数据访问和扩展组件 |
-| [ER 图](docs/design/ER.png) | 核心实体、属性和关系 |
-| [UML 类图](docs/design/UML.png) | 实体类、关联关系、分层落地结构和关键枚举 |
+| [Week1 设计资料索引](week1/README.md) | 需求、PRD、ER 图、UML 图和系统架构图 |
+| [PRD](week1/PRD.md) | 项目背景、用户故事、验收标准、范围边界和风险 |
+| [需求文档](week1/%E9%9C%80%E6%B1%82%E6%96%87%E6%A1%A3.md) | 业务流程和功能需求拆分 |
+| [系统架构图](week1/%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.png) | 分层架构、认证授权、服务、数据访问和扩展组件 |
+| [ER 图](week1/ER.png) | 核心实体、属性和关系 |
+| [UML 类图](week1/UML.png) | 实体类、关联关系、分层落地结构和关键枚举 |
 | [实现说明](docs/implementation/README.md) | 后端交付范围、启动步骤、默认账号和目录说明 |
 | [前端产品需求文档](docs/design/frontend-prd.md) | 目标用户、核心场景、页面结构、视觉风格和交互状态要求 |
 | [接口说明](docs/implementation/api.md) | REST API、权限、请求示例和页面入口 |
@@ -124,8 +124,9 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 
 已验证内容：
 
-- `./mvnw clean verify`: 88 个测试通过，JaCoCo 全项目生产代码行覆盖率 89.46%，超过 Week4 80% 门控。
+- `./mvnw clean verify`: 88 个测试通过，JaCoCo 全项目生产代码行覆盖率 89.38%，超过 Week4 80% 门控。
 - `./mvnw checkstyle:check`: 0 个 Checkstyle violations。
+- Log4j2: 使用 `spring-boot-starter-log4j2` 和 `src/main/resources/log4j2-spring.xml` 输出控制台日志与滚动文件日志。
 - `node --check src/main/resources/static/js/app.js`: 前端脚本语法通过。
 - `xmllint --noout docs/implementation/jmeter-login-concurrency.jmx docs/implementation/jmeter-week3-core-business.jmx docs/implementation/jmeter-week3-write-chain.jmx`: JMeter 模板 XML 结构通过。
 - `docker compose config -q`: Compose 配置语法通过。
@@ -140,9 +141,10 @@ docker compose up -d mysql redis rabbitmq elasticsearch
 ├── src/                     # Spring Boot 源码、页面、静态资源、测试
 ├── config/                  # Checkstyle 配置
 ├── docs/
-│   ├── design/              # PRD、需求文档、架构图、ER 图、UML 图、draw.io 源文件
+│   ├── design/              # 前端产品需求文档等非 Week1 设计补充资料
 │   ├── implementation/      # API、数据库、部署监控、测试记录、问题清单、压测模板
 │   └── screenshots/         # 登录、工作台、上岗申请、领导审批、工作日志、绩效、通知和操作日志截图
+├── week1/                   # PRD、需求文档、架构图、ER 图、UML 图、draw.io 源文件
 ├── ops/                     # Prometheus 和 Grafana 配置
 ├── scripts/                 # JMeter 自动化脚本
 ├── docker-compose.yml       # MySQL、Redis、RabbitMQ、ES、监控和应用容器

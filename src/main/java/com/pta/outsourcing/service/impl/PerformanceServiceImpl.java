@@ -66,6 +66,7 @@ public class PerformanceServiceImpl implements PerformanceService {
         String periodValue = normalizePeriodValue(periodType, request.periodValue(), project.getId());
         String lockKey = lockKey(evaluatedUser.getId(), project.getId(), periodType.name(), periodValue);
         String token = UUID.randomUUID().toString();
+        // 锁粒度按人员、项目和绩效周期拆分，避免同一当前绩效被并发创建或覆盖。
         if (!redisLockService.acquire(lockKey, token, LOCK_TTL)) {
             throw new BizException(ErrorCode.BUSINESS_ERROR, "绩效正在被修改，请稍后重试");
         }
@@ -106,6 +107,7 @@ public class PerformanceServiceImpl implements PerformanceService {
         String lockKey = lockKey(existing.getEvaluatedUserId(), existing.getProjectId(), existing.getPeriodType(),
                 existing.getPeriodValue());
         String token = UUID.randomUUID().toString();
+        // 更新和新增共用同一把业务锁，保证归档旧记录与创建新记录之间不会被其他请求插入。
         if (!redisLockService.acquire(lockKey, token, LOCK_TTL)) {
             throw new BizException(ErrorCode.BUSINESS_ERROR, "绩效正在被修改，请稍后重试");
         }
@@ -271,6 +273,7 @@ public class PerformanceServiceImpl implements PerformanceService {
         try {
             performanceRecordMapper.insert(record);
         } catch (DuplicateKeyException exception) {
+            // 数据库唯一索引作为并发兜底，防止分布式锁异常时出现多条当前有效绩效。
             throw new BizException(ErrorCode.BUSINESS_ERROR,
                     "同一人员同一项目同一周期只能有一条当前有效绩效记录");
         }
@@ -343,6 +346,7 @@ public class PerformanceServiceImpl implements PerformanceService {
             if (projectId == null) {
                 throw new BizException(ErrorCode.PARAM_ERROR, "项目周期绩效必须指定项目");
             }
+            // 项目周期没有自然年月值，用项目 ID 生成稳定周期值，便于唯一约束和查询复用。
             return "PROJECT-" + projectId;
         }
         if (StringUtils.isBlank(periodValue)) {

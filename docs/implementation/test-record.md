@@ -70,6 +70,7 @@ curl -fsS http://localhost:8080/actuator/prometheus >/dev/null
 | 单元测试 | Controller 薄封装委托、统一 `ResultVO` 响应和 UI 模板入口 |
 | 单元测试 | JWT 过滤器、Redis 登录态、Redis 锁、异常处理、配置 Bean 和 ES 索引文档 |
 | 规范检查 | Checkstyle 基础命名、未使用导入、必需大括号 |
+| 日志配置 | 使用 Log4j2 输出控制台日志和滚动文件日志 |
 | 覆盖率门控 | JaCoCo `clean verify` 对全项目生产代码执行 80% 行覆盖率门槛，Lombok 生成代码通过 `lombok.config` 排除 |
 | 前端静态检查 | `node --check` 验证 `app.js` 语法 |
 | JMeter 材料校验 | 登录并发、核心读链路、写入链路三个 `.jmx` 文件通过 XML 结构校验 |
@@ -130,7 +131,7 @@ curl -fsS http://localhost:8080/actuator/prometheus >/dev/null
 2026-08-17 Week4 Elasticsearch 日志检索闭环复测通过：
 
 - `./mvnw -q clean verify`：88 tests，0 failures，0 errors，0 skipped。
-- JaCoCo 全项目生产代码覆盖率：line 1069/1195，89.46%；instruction 5242/5891，88.98%；branch 257/360，71.39%。
+- JaCoCo 全项目生产代码覆盖率：line 1069/1196，89.38%；instruction 5242/5891，88.98%；branch 257/360，71.39%。
 - `./mvnw -q checkstyle:check`、`node --check src/main/resources/static/js/app.js`、`xmllint --noout docs/implementation/*.jmx`、`docker compose config -q`、`git diff --check` 均通过。
 - `docker compose up -d --build` 后 `pta-app` healthy，`/api/health`、`/actuator/health/readiness`、`/doc.html`、`/ui/login`、`/ui/work-logs`、`/ui/performances`、`/actuator/prometheus` 均返回成功响应。
 

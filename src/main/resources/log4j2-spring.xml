@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="60">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] [%X{traceId}] %logger{36} - %msg%n</Property>
+        <Property name="LOG_PATH">${sys:LOG_DIR:-logs}</Property>
+        <Property name="APP_NAME">${spring:spring.application.name:-internal-outsourcing-management}</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <RollingFile
+                name="ApplicationFile"
+                fileName="${LOG_PATH}/${APP_NAME}.log"
+                filePattern="${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="14"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.pta.outsourcing" level="${spring:logging.level.com.pta.outsourcing:-info}" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ApplicationFile"/>
+        </Logger>
+        <Logger name="org.springframework.security" level="${spring:logging.level.org.springframework.security:-warn}"/>
+        <Root level="${spring:logging.level.root:-info}">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ApplicationFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

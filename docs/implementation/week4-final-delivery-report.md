@@ -38,16 +38,16 @@
 - 业务服务层：认证、用户权限、申请审批、通知、工作日志、绩效、审计日志。
 - 数据访问层：MyBatis-Plus Mapper、分页查询、条件查询。
 - 存储与中间件层：MySQL、Redis、RabbitMQ、Elasticsearch。
-- 工程与监控层：Docker Compose、Actuator、Prometheus、Grafana、JMeter、Checkstyle。
+- 工程与监控层：Docker Compose、Actuator、Prometheus、Grafana、JMeter、Checkstyle、Log4j2。
 
 相关设计文件：
 
 ```text
-docs/design/PRD.md
-docs/design/需求文档.md
-docs/design/ER.png
-docs/design/UML.png
-docs/design/系统架构.png
+/Users/baozhashizitou/Documents/pta/week1/PRD.md
+/Users/baozhashizitou/Documents/pta/week1/需求文档.md
+/Users/baozhashizitou/Documents/pta/week1/ER.png
+/Users/baozhashizitou/Documents/pta/week1/UML.png
+/Users/baozhashizitou/Documents/pta/week1/系统架构.png
 ```
 
 ## 4. 功能交付情况
@@ -93,9 +93,9 @@ performance_record
 数据库设计文档和 SQL 脚本：
 
 ```text
-docs/implementation/database.md
-src/main/resources/db/schema.sql
-src/main/resources/db/data.sql
+/Users/baozhashizitou/Documents/pta/docs/implementation/database.md
+/Users/baozhashizitou/Documents/pta/src/main/resources/db/schema.sql
+/Users/baozhashizitou/Documents/pta/src/main/resources/db/data.sql
 ```
 
 应用启动时通过 Spring SQL Init 执行 `schema.sql` 和 `data.sql`，Docker Compose 创建数据库 `pta_outsourcing` 后可自动完成建表和初始化数据。
@@ -105,7 +105,7 @@ src/main/resources/db/data.sql
 接口文档：
 
 ```text
-docs/implementation/api.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/api.md
 ```
 
 在线文档入口：
@@ -137,8 +137,9 @@ http://localhost:8080/ui/operation-logs
 | 类型 | 命令或入口 | 结果 |
 | --- | --- | --- |
 | 单元测试与覆盖率 | `./mvnw -q clean verify` | 88 tests，0 failures，0 errors，0 skipped |
-| JaCoCo 行覆盖率 | `target/site/jacoco/index.html` | 89.46%，超过 80% 要求 |
+| JaCoCo 行覆盖率 | `target/site/jacoco/index.html` | 89.38%，超过 80% 要求 |
 | 代码规范 | `./mvnw -q checkstyle:check` | 通过 |
+| 运行日志 | `spring-boot-starter-log4j2`、`src/main/resources/log4j2-spring.xml` | Log4j2 控制台日志和滚动文件日志已配置 |
 | 前端静态检查 | `node --check src/main/resources/static/js/app.js` | 通过 |
 | JMeter XML | `xmllint --noout docs/implementation/*.jmx` | 通过 |
 | Compose 配置 | `docker compose config -q` | 通过 |
@@ -152,7 +153,7 @@ JaCoCo 结果：
 
 | Counter | Covered | Total | Ratio |
 | --- | ---: | ---: | ---: |
-| Line | 1069 | 1195 | 89.46% |
+| Line | 1069 | 1196 | 89.38% |
 | Instruction | 5242 | 5891 | 88.98% |
 | Branch | 257 | 360 | 71.39% |
 
@@ -161,10 +162,10 @@ JaCoCo 结果：
 JMeter 压测文件：
 
 ```text
-docs/implementation/jmeter-login-concurrency.jmx
-docs/implementation/jmeter-week3-core-business.jmx
-docs/implementation/jmeter-week3-write-chain.jmx
-scripts/run-week3-jmeter.sh
+/Users/baozhashizitou/Documents/pta/docs/implementation/jmeter-login-concurrency.jmx
+/Users/baozhashizitou/Documents/pta/docs/implementation/jmeter-week3-core-business.jmx
+/Users/baozhashizitou/Documents/pta/docs/implementation/jmeter-week3-write-chain.jmx
+/Users/baozhashizitou/Documents/pta/scripts/run-week3-jmeter.sh
 ```
 
 最终实测结果：
@@ -178,9 +179,9 @@ scripts/run-week3-jmeter.sh
 压测产物：
 
 ```text
-target/jmeter-results/week3-jmeter-summary.md
-target/jmeter-results/*.jtl
-target/jmeter-results/*-html/
+/Users/baozhashizitou/Documents/pta/target/jmeter-results/week3-jmeter-summary.md
+/Users/baozhashizitou/Documents/pta/target/jmeter-results/*.jtl
+/Users/baozhashizitou/Documents/pta/target/jmeter-results/*-html/
 ```
 
 Tomcat 线程池支持环境变量配置：
@@ -198,16 +199,16 @@ Docker Compose 验收环境使用 `300/30/200`，用于本地较高并发验证�
 部署手册：
 
 ```text
-docs/implementation/deployment-monitoring.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/deployment-monitoring.md
 ```
 
 部署文件：
 
 ```text
-Dockerfile
-docker-compose.yml
-ops/prometheus/prometheus.yml
-ops/grafana/dashboards/pta-overview.json
+/Users/baozhashizitou/Documents/pta/Dockerfile
+/Users/baozhashizitou/Documents/pta/docker-compose.yml
+/Users/baozhashizitou/Documents/pta/ops/prometheus/prometheus.yml
+/Users/baozhashizitou/Documents/pta/ops/grafana/dashboards/pta-overview.json
 ```
 
 启动命令：
@@ -231,16 +232,17 @@ docker compose up -d --build
 ## 10. 文档交付清单
 
 ```text
-README.md
-docs/implementation/README.md
-docs/implementation/api.md
-docs/implementation/database.md
-docs/implementation/deployment-monitoring.md
-docs/implementation/test-record.md
-docs/implementation/problem-list.md
-docs/implementation/jmeter-report.md
-docs/implementation/jmeter-week3-run-report.md
-docs/implementation/week4-final-delivery-report.md
+/Users/baozhashizitou/Documents/pta/README.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/README.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/api.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/database.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/deployment-monitoring.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/test-record.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/problem-list.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/jmeter-report.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/jmeter-week3-run-report.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/week4-final-delivery-report.md
+/Users/baozhashizitou/Documents/pta/docs/implementation/codex-work-summary.md
 ```
 
 ## 11. 难点与总结
